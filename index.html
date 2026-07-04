@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에듀케레 비즈니스 대시보드</title>
+<style>
+:root{
+  --bg:#f4f5f7; --card:#ffffff; --ink:#1f2430; --sub:#6b7280; --line:#e5e7eb;
+  --brand:#3b5bdb; --brand-soft:#edf2ff; --ok:#12b886; --warn:#f59f00; --bad:#e03131;
+  --r:14px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:"Malgun Gothic","맑은 고딕",Pretendard,-apple-system,sans-serif; background:var(--bg); color:var(--ink); font-size:15px;}
+#app{display:flex; min-height:100vh;}
+aside{width:220px; background:#1e2433; color:#cbd3e1; padding:20px 12px; flex-shrink:0;}
+aside .logo{font-size:17px; font-weight:800; color:#fff; padding:6px 10px 18px;}
+aside .logo small{display:block; font-weight:400; font-size:11px; color:#8b95a8; margin-top:4px;}
+aside button{display:block; width:100%; text-align:left; background:none; border:none; color:#cbd3e1; padding:10px 12px; border-radius:10px; font-size:14px; cursor:pointer; margin-bottom:2px; font-family:inherit;}
+aside button:hover{background:#2a3247;}
+aside button.on{background:var(--brand); color:#fff; font-weight:700;}
+aside .sec{font-size:11px; color:#7c8699; padding:14px 12px 6px; letter-spacing:1px;}
+main{flex:1; padding:24px 28px; max-width:1100px;}
+h1{font-size:21px; margin-bottom:4px;}
+h2{font-size:16px; margin:18px 0 10px;}
+.sub{color:var(--sub); font-size:13px; margin-bottom:16px;}
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; margin-bottom:14px;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+.bizcard{border-top:4px solid var(--bc,#888);}
+.bizcard h3{font-size:15px; margin-bottom:6px;}
+.badge{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--brand-soft); color:var(--brand); font-weight:700;}
+.badge.ok{background:#e6fcf5; color:#0b7285;}
+.badge.warn{background:#fff9db; color:#b08800;}
+.badge.bad{background:#fff0f0; color:var(--bad);}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th,td{padding:7px 8px; border-bottom:1px solid var(--line); text-align:left; vertical-align:middle;}
+th{color:var(--sub); font-weight:600; font-size:12px; white-space:nowrap;}
+td input,td select{width:100%;}
+input,select,textarea{font-family:inherit; font-size:13.5px; padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);}
+input:focus,select:focus,textarea:focus{outline:2px solid #bac8ff; border-color:var(--brand);}
+textarea{width:100%; resize:vertical; min-height:64px; line-height:1.55;}
+button.btn{background:var(--brand); color:#fff; border:none; border-radius:9px; padding:8px 14px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;}
+button.btn:hover{filter:brightness(1.08);}
+button.btn.ghost{background:#fff; color:var(--brand); border:1px solid var(--brand);}
+button.btn.sm{padding:4px 10px; font-size:12px;}
+button.btn.gray{background:#eceef2; color:#444;}
+button.del{background:none; border:none; color:#c0c4cc; cursor:pointer; font-size:15px;}
+button.del:hover{color:var(--bad);}
+.task{display:flex; align-items:center; gap:8px; padding:6px 2px; border-bottom:1px dashed var(--line);}
+.task:last-child{border-bottom:none;}
+.task label{flex:1; cursor:pointer;}
+.task.done label{text-decoration:line-through; color:#aaa;}
+.kv{margin-bottom:10px;}
+.kv b{display:block; font-size:12px; color:var(--sub); margin-bottom:4px;}
+.row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+.num{font-variant-numeric:tabular-nums; text-align:right;}
+.big{font-size:22px; font-weight:800;}
+.bar{height:8px; background:var(--brand); border-radius:4px; min-width:2px;}
+.barwrap{background:#eef0f4; border-radius:4px; width:100%;}
+.alert{background:#fff9db; border:1px solid #ffe08a; border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:13.5px;}
+.alert.red{background:#fff0f0; border-color:#ffc9c9;}
+.chat{display:flex; flex-direction:column; gap:10px; max-height:52vh; overflow-y:auto; padding:6px 2px; margin-bottom:12px;}
+.msg{max-width:82%; padding:10px 14px; border-radius:14px; line-height:1.6; white-space:pre-wrap; font-size:14px;}
+.msg.user{align-self:flex-end; background:var(--brand); color:#fff; border-bottom-right-radius:4px;}
+.msg.ai{align-self:flex-start; background:#fff; border:1px solid var(--line); border-bottom-left-radius:4px;}
+.hint{font-size:12.5px; color:var(--sub); line-height:1.6;}
+.plus{color:var(--ok); font-weight:700;} .minus{color:var(--bad); font-weight:700;}
+.shead{display:flex;}
+.sgrid{display:flex; border:1px solid var(--line); border-radius:12px; background:#fff; overflow:hidden; position:relative;}
+.saxis{width:46px; position:relative; border-right:1px solid var(--line); flex-shrink:0; background:#fafbfc;}
+.saxis span{position:absolute; right:6px; font-size:10.5px; color:var(--sub); transform:translateY(-50%);}
+.scol{flex:1; position:relative; border-right:1px solid var(--line2); min-width:0;}
+.scol:last-child{border-right:none;}
+.sblk{position:absolute; left:3px; right:3px; border-radius:7px; color:#fff; font-size:11.5px; font-weight:600; padding:3px 6px; overflow:hidden; line-height:1.25; box-shadow:0 1px 3px rgba(0,0,0,.18);}
+.sblk small{display:block; font-size:10px; font-weight:400; opacity:.85;}
+.g65{table-layout:fixed;}
+.g65 th,.g65 td{padding:4px; border:1px solid var(--line);}
+.g65 th{background:#f6f7f9;}
+.g65 input{width:100%; font-size:12.5px; padding:6px 7px;}
+.g65 .fmt input{font-weight:700; background:#f8f9fb;}
+.g65 .cellwrap{display:flex; flex-direction:column; gap:3px;}
+.g65 .mini{font-size:10.5px; color:var(--brand); background:none; border:none; cursor:pointer; text-align:left; padding:0; font-family:inherit;}
+.g65 .sent{font-size:10.5px; color:var(--ok);}
+@media(max-width:840px){
+  #app{flex-direction:column;}
+  aside{width:100%; display:flex; flex-wrap:wrap; gap:4px; padding:10px;}
+  aside .logo{width:100%; padding-bottom:8px;} aside .sec{display:none;}
+  aside button{width:auto; padding:7px 11px; font-size:13px;}
+  main{padding:16px;} .grid2,.grid4{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="nav"></aside>
+  <main id="view"></main>
+</div>
+<script>
+"use strict";
+/* ===== 기본 데이터 ===== */
+var LS_KEY = "educere_dashboard_v1";
+var BIZ = [
+  {id:"academy", name:"에듀케레 영수학원", short:"학원", color:"#4c6ef5"},
+  {id:"gwan",    name:"에듀케레 바른학습관", short:"학습관", color:"#12b886"},
+  {id:"evayon",  name:"에바연 바른교육연구소", short:"에바연", color:"#f76707"},
+  {id:"studia",  name:"스터디아", short:"스터디아", color:"#7048e8"},
+  {id:"hanglow", name:"한글로우 (HanGlow)", short:"한글로우", color:"#e64980"}
+];
+var STAGES = ["문의","상담예정","상담완료","등록·결제","보류"];
+var CH = ["블로그","인스타그램","카카오채널","문자·알림톡","네이버카페","기타"];
+var CSTAT = ["예정","작성중","발행완료"];
+var DAYN = ["월","화","수","목","금","토","일"];
+var METRIC_DEFS = [
+  {k:"inq", label:"문의·신청"},
+  {k:"con", label:"상담"},
+  {k:"pay", label:"등록·결제"},
+  {k:"rev", label:"매출(원)"}
+];
+
+function seed(){
+  return {
+    version:1, lastExport:null,
+    biz:{
+      academy:{ status:"로컬 운영 중 · 오르다 시스템 도입 진행", problem:"운영 어려움, 신규 유입/전환 압박", direction:"진단·관리를 앞세운 상담 + 오르다 14일 안착 + 재상담 루틴",
+        tasks:[t("오르다 1단계 기술 확인 (배포·로그인·점수 저장)"),t("재상담 연락 대상 명단 뽑기"),t("재상담 메시지 초안 작성·발송")], memo:"" },
+      gwan:{ status:"관리형 독서실 운영 중", problem:"운영 효율, 차별화, 유지율", direction:"주간 관리 리포트를 차별화 무기로 — '무엇이 막혔고 다음에 무엇을 할지'",
+        tasks:[t("주간 관리 리포트에 넣을 항목 정하기"),t("리포트 샘플 1개 만들어 학부모 1~2명 반응 확인")], memo:"" },
+      evayon:{ status:"온라인 전국구 브랜드 시도 중", problem:"이렇다 할 실적 부재", direction:"대표 무료 진단 1개 → 상담 신청 → 첫 결제 1건 만들기",
+        tasks:[t("대표 무료 오퍼 확정 (수능최저 진단 vs 학생부 설계 준비도)"),t("바로 쓸 랜딩/자료 표시하기"),t("홍보 URL 1개 확정")], memo:"" },
+      studia:{ status:"AI 학습앱 배포 완료 (studia.co.kr, 월 18,900원)", problem:"인지도 낮음, 가입자 극소수 (4월 기준 3명)", direction:"로컬 학생 실사용 → 후기 확보 → 구독 전환 · 학원 B2B 검토",
+        tasks:[t("현재 가입자·결제자 수 확인해 기록"),t("가입 플로우 개편(결제수단 선등록) 구현 여부 확인"),t("랜딩에 '광고 없음·6과목·답베끼기 방지' 메시지 강조 검토")], memo:"" },
+      hanglow:{ status:"외국인 대상 한국어 학습 앱 개발 중 (개인 프로젝트)", problem:"미출시 — 웹앱·학습 콘텐츠(발음·문법·회화·K컬처)와 백엔드 준비는 진행, 출시 단계 미완", direction:"작게라도 출시 가능한 1차 버전(웹 우선 여부) 정의 후 배포",
+        tasks:[t("현재 개발 단계 기록 (백엔드 Phase 어디까지 완료?)"),t("배포 주소(도메인/GitHub Pages) 확정해 대시보드에 연결"),t("1차 출시 범위 정하기 (웹 먼저 vs 앱스토어)")], memo:"" }
+    },
+    metrics:{}, pipeline:[], contents:[], cash:[],
+    schedule:{startHour:8, endHour:23, blocks:[]},
+    grid:{ topics:["","","","","",""], formats:["핵심형","비교형","토크형","설명형","리스트형"], cells:{} },
+    suggest:{items:[], at:null},
+    orda:{weeks:{}, lastBackup:null},
+    routines:[
+      r("대시보드 백업(JSON 내보내기) + 오르다·스터디아 데이터 백업","매주"),
+      r("주간 실적 입력·점검 (행동 지표만 본다)","매주"),
+      r("후기·사례 수집 요청 (후기수집 키트 활용)","매주"),
+      r("스터디아 구독·결제 오류 점검","매주"),
+      r("학부모 공지·소식 발송","매월"),
+      r("원천세 신고·납부 (매월 10일)","매월"),
+      r("장부·현금흐름 정리","매월"),
+      r("부가가치세 신고 (1·4·7·10월 25일)","분기"),
+      r("가격·약관·개인정보처리방침 점검","분기")
+    ],
+    chat:[], settings:{apiKey:"", model:"claude-sonnet-5"}
+  };
+}
+function t(x){ return {id:uid(), text:x, done:false}; }
+function r(x,c){ return {id:uid(), text:x, cycle:c, lastDone:null}; }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+/* ===== 상태 ===== */
+var state;
+try{ state = JSON.parse(localStorage.getItem(LS_KEY)) || seed(); }catch(e){ state = seed(); }
+if(!state.schedule) state.schedule = {startHour:8, endHour:23, blocks:[]};
+if(!state.grid) state.grid = { topics:["","","","","",""], formats:["핵심형","비교형","토크형","설명형","리스트형"], cells:{} };
+if(!state.suggest) state.suggest = {items:[], at:null};
+if(!state.orda) state.orda = {weeks:{}, lastBackup:null};
+if(!state.biz.hanglow) state.biz.hanglow = { status:"외국인 대상 한국어 학습 앱 개발 중 (개인 프로젝트)", problem:"미출시 — 웹앱·학습 콘텐츠(발음·문법·회화·K컬처)와 백엔드 준비는 진행, 출시 단계 미완", direction:"작게라도 출시 가능한 1차 버전(웹 우선 여부) 정의 후 배포", tasks:[t("현재 개발 단계 기록 (백엔드 Phase 어디까지 완료?)"),t("배포 주소(도메인/GitHub Pages) 확정해 대시보드에 연결"),t("1차 출시 범위 정하기 (웹 먼저 vs 앱스토어)")], memo:"" };
+if(!state.routines.some(function(x){return x.text.indexOf("오르다 주간 점검")>=0;})) state.routines.push(r("오르다 주간 점검 수치 입력 (납부·미션·피드백)","매주"));
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* ===== 유틸 ===== */
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fmt(n){ n=Number(n)||0; return n.toLocaleString("ko-KR"); }
+function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function monthStr(){ return todayStr().slice(0,7); }
+function mondayOf(dstr){
+  var d = dstr? new Date(dstr+"T00:00:00") : new Date();
+  var day = d.getDay(); var diff = (day===0? -6 : 1-day);
+  d.setDate(d.getDate()+diff);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function shiftWeek(wk, n){ var d=new Date(wk+"T00:00:00"); d.setDate(d.getDate()+n*7); return mondayOf(d.toISOString().slice(0,10)); }
+function weekLabel(wk){ var d=new Date(wk+"T00:00:00"); var e=new Date(d); e.setDate(e.getDate()+6); return (d.getMonth()+1)+"/"+d.getDate()+" ~ "+(e.getMonth()+1)+"/"+e.getDate(); }
+function daysSince(dstr){ if(!dstr) return 9999; return Math.floor((new Date(todayStr())-new Date(dstr))/86400000); }
+function bizName(id){ var b=BIZ.find(function(x){return x.id===id;}); return b? b.short : id; }
+function getMetric(wk,bid){ if(!state.metrics[wk]) state.metrics[wk]={}; if(!state.metrics[wk][bid]) state.metrics[wk][bid]={inq:0,con:0,pay:0,rev:0,note:""}; return state.metrics[wk][bid]; }
+
+/* ===== 라우팅 ===== */
+var route = "home";
+var curWeek = mondayOf();
+var curMonth = monthStr();
+function go(rt){ route = rt; render(); }
+
+var NAV = [
+  ["home","🏠 통합 홈"],
+  ["_sec","사업별"],
+  ["biz:academy","영수학원"],
+  ["biz:gwan","바른학습관"],
+  ["biz:evayon","에바연"],
+  ["biz:studia","스터디아"],
+  ["biz:hanglow","한글로우"],
+  ["_sec","운영"],
+  ["sched","🗓 주간 일정표"],
+  ["metrics","📊 주간 실적"],
+  ["pipe","👥 상담 파이프라인"],
+  ["cal","📅 콘텐츠 캘린더"],
+  ["grid","🧩 콘텐츠 기획 6×5"],
+  ["cash","💰 현금흐름"],
+  ["routine","✅ 운영 루틴"],
+  ["_sec","도구"],
+  ["ai","🤖 AI 어시스턴트"],
+  ["set","⚙️ 설정·백업"]
+];
+function renderNav(){
+  var h = '<div class="logo">에듀케레 대시보드<small>1인 운영 통합 관리</small></div>';
+  NAV.forEach(function(n){
+    if(n[0]==="_sec"){ h += '<div class="sec">'+n[1]+'</div>'; return; }
+    h += '<button class="'+(route===n[0]?"on":"")+'" onclick="App.go(\''+n[0]+'\')">'+n[1]+'</button>';
+  });
+  document.getElementById("nav").innerHTML = h;
+}
+
+/* ===== 화면: 통합 홈 ===== */
+function vHome(){
+  var wk = mondayOf();
+  var alerts = [];
+  var due = state.routines.filter(function(x){ return routineDue(x); });
+  if(due.length) alerts.push('<div class="alert">⏰ 할 차례가 된 운영 루틴이 <b>'+due.length+'건</b> 있어요. <button class="btn sm ghost" onclick="App.go(\'routine\')">보러 가기</button></div>');
+  var follow = state.pipeline.filter(function(p){ return p.stage==="문의"||p.stage==="상담예정"; });
+  if(follow.length) alerts.push('<div class="alert">👥 연락·상담을 기다리는 고객이 <b>'+follow.length+'명</b> 있어요. <button class="btn sm ghost" onclick="App.go(\'pipe\')">파이프라인</button></div>');
+  var wm = state.metrics[wk];
+  if(!wm) alerts.push('<div class="alert">📊 이번 주 실적이 아직 비어 있어요. 일주일에 한 번만 입력하면 됩니다. <button class="btn sm ghost" onclick="App.go(\'metrics\')">입력하기</button></div>');
+  if(daysSince(state.lastExport) > 7) alerts.push('<div class="alert red">💾 마지막 백업 후 '+(state.lastExport? daysSince(state.lastExport)+"일":"기록 없음")+' — 설정에서 JSON 백업을 내려받아 두세요. <button class="btn sm ghost" onclick="App.go(\'set\')">백업하기</button></div>');
+
+  var dow = (new Date().getDay()+6)%7;
+  var tb = (state.schedule && state.schedule.blocks ? state.schedule.blocks : []).filter(function(b){return +b.day===dow;}).sort(function(a,b){return toMin(a.start)-toMin(b.start);});
+  var todayCard = tb.length ? '<div class="card"><h2 style="margin-top:0">오늘 일정 ('+DAYN[dow]+'요일)</h2>'+tb.map(function(b){
+      var c = schedCat(b.cat);
+      return '<div class="task"><span class="badge" style="background:'+c.color+';color:#fff">'+esc(c.short)+'</span><label>'+esc(b.start)+'–'+esc(b.end)+' '+esc(b.label)+'</label></div>';
+    }).join("")+'<div style="margin-top:8px"><button class="btn sm ghost" onclick="App.go(\'sched\')">주간 일정표 →</button></div></div>' : "";
+
+  var tot = {inq:0,con:0,pay:0,rev:0};
+  BIZ.forEach(function(b){ var m=getMetric(wk,b.id); tot.inq+=+m.inq||0; tot.con+=+m.con||0; tot.pay+=+m.pay||0; tot.rev+=+m.rev||0; });
+
+  var cards = BIZ.map(function(b){
+    var d = state.biz[b.id];
+    var open = d.tasks.filter(function(x){return !x.done;});
+    var m = getMetric(wk,b.id);
+    var taskHtml = open.slice(0,3).map(function(x){ return '<div class="task"><span>·</span><label>'+esc(x.text)+'</label></div>'; }).join("") || '<div class="hint">열린 할 일 없음 🎉</div>';
+    return '<div class="card bizcard" style="--bc:'+b.color+'">'+
+      '<h3>'+esc(b.name)+'</h3>'+
+      '<div class="hint" style="margin-bottom:8px">'+esc(d.status)+'</div>'+
+      '<div style="font-size:12.5px;color:var(--sub);margin-bottom:6px">이번 주: 문의 '+fmt(m.inq)+' · 상담 '+fmt(m.con)+' · 결제 '+fmt(m.pay)+'</div>'+
+      taskHtml+
+      '<div style="margin-top:10px"><button class="btn sm ghost" onclick="App.go(\'biz:'+b.id+'\')">할 일 '+open.length+'개 관리 →</button></div>'+
+    '</div>';
+  }).join("");
+
+  return '<h1>통합 홈</h1><div class="sub">'+todayStr()+' · 이번 주 '+weekLabel(wk)+'</div>'+
+    alerts.join("")+ todayCard +
+    '<div class="card"><h2 style="margin-top:0">이번 주 전체 지표</h2><div class="grid4">'+
+      kpi("문의·신청",fmt(tot.inq))+kpi("상담",fmt(tot.con))+kpi("등록·결제",fmt(tot.pay))+kpi("매출",fmt(tot.rev)+"원")+
+    '</div></div>'+
+    '<h2>사업별 현황</h2><div class="grid2">'+cards+'</div>';
+}
+function kpi(label,val){ return '<div><b style="font-size:12px;color:var(--sub)">'+label+'</b><div class="big">'+val+'</div></div>'; }
+
+/* ===== 화면: 사업별 ===== */
+function vBiz(bid){
+  var b = BIZ.find(function(x){return x.id===bid;});
+  var d = state.biz[bid];
+  var tasks = d.tasks.map(function(x){
+    return '<div class="task '+(x.done?"done":"")+'">'+
+      '<input type="checkbox" '+(x.done?"checked":"")+' onchange="App.toggleTask(\''+bid+'\',\''+x.id+'\')">'+
+      '<label onclick="App.toggleTask(\''+bid+'\',\''+x.id+'\')">'+esc(x.text)+'</label>'+
+      '<button class="del" onclick="App.delTask(\''+bid+'\',\''+x.id+'\')">✕</button></div>';
+  }).join("");
+  return '<h1 style="border-left:5px solid '+b.color+';padding-left:10px">'+esc(b.name)+'</h1><div class="sub">상황판 · 할 일 · 메모</div>'+
+  '<div class="grid2"><div class="card">'+
+    '<div class="kv"><b>현재 상태</b><textarea onchange="App.setBiz(\''+bid+'\',\'status\',this.value)">'+esc(d.status)+'</textarea></div>'+
+    '<div class="kv"><b>가장 큰 문제</b><textarea onchange="App.setBiz(\''+bid+'\',\'problem\',this.value)">'+esc(d.problem)+'</textarea></div>'+
+    '<div class="kv"><b>회복·성장 방향</b><textarea onchange="App.setBiz(\''+bid+'\',\'direction\',this.value)">'+esc(d.direction)+'</textarea></div>'+
+  '</div>'+
+  '<div class="card"><h2 style="margin-top:0">할 일</h2>'+tasks+
+    '<div class="row" style="margin-top:10px"><input id="newTask" placeholder="새 할 일 입력 후 추가" style="flex:1" onkeydown="if(event.key===\'Enter\')App.addTask(\''+bid+'\')">'+
+    '<button class="btn sm" onclick="App.addTask(\''+bid+'\')">추가</button></div>'+
+  '</div></div>'+
+  ((bid==="academy"||bid==="gwan")? vOrdaCard(bid) : "")+
+  ((bid==="evayon")? vEvayonLinks() : "")+
+  ((bid==="studia")? vStudiaLinks() : "")+
+  '<div class="card"><h2 style="margin-top:0">메모 (상담에서 나온 질문, 아이디어, 사례)</h2>'+
+    '<textarea style="min-height:110px" onchange="App.setBiz(\''+bid+'\',\'memo\',this.value)" placeholder="여기에 적은 내용은 나중에 옵시디언으로 옮겨 자산이 됩니다.">'+esc(d.memo)+'</textarea></div>';
+}
+
+/* ===== 오르다 주간 점검 ===== */
+function ordaWeek(){ var wk=mondayOf(); if(!state.orda.weeks[wk]) state.orda.weeks[wk]={pay:"",unpaid:"",mission:"",nofb:"",low:"",gwanCnt:"",note:""}; return state.orda.weeks[wk]; }
+function vOrdaCard(bid){
+  var o = ordaWeek();
+  var bdays = state.orda.lastBackup? daysSince(state.orda.lastBackup) : null;
+  var bwarn = (bdays===null || bdays>7);
+  function fld(k,label,ph){ return '<div><b style="font-size:12px;color:var(--sub)">'+label+'</b><input type="number" min="0" class="num" style="width:100%" value="'+esc(o[k])+'" placeholder="'+ph+'" onchange="App.setOrda(\''+k+'\',this.value)"></div>'; }
+  return '<div class="card" style="border-left:4px solid #4c6ef5"><h2 style="margin-top:0">🧗 오르다 주간 점검 ('+weekLabel(mondayOf())+')</h2>'+
+  '<div class="hint" style="margin-bottom:10px">오르다 원장 화면에서 확인해 옮겨 적습니다. 영수학원과 학습관 학생이 같은 시스템을 씁니다. <a href="https://educere-orda.netlify.app" target="_blank" style="color:var(--brand);font-weight:700">오르다 열기 →</a></div>'+
+  '<div class="grid4" style="margin-bottom:10px">'+
+    fld("pay","이번 달 납부율(%)","%")+fld("unpaid","미납 학생 수","명")+fld("mission","최근 7일 미션 완료율(%)","%")+fld("gwanCnt","학습관 이용 학생 수","명")+
+  '</div>'+
+  '<div class="grid4" style="margin-bottom:10px">'+
+    fld("nofb","2주+ 피드백 없는 학생","명")+fld("low","완료율 50% 미만 학생","명")+
+    '<div style="grid-column:span 2"><b style="font-size:12px;color:var(--sub)">메모 (파일럿 반응, 불편사항)</b><input style="width:100%" value="'+esc(o.note)+'" onchange="App.setOrda(\'note\',this.value)"></div>'+
+  '</div>'+
+  '<div class="row"><span class="badge '+(bwarn?"bad":"ok")+'">오르다 백업: '+(state.orda.lastBackup? state.orda.lastBackup+" ("+bdays+"일 전)":"기록 없음")+'</span>'+
+  '<button class="btn sm gray" onclick="App.ordaBackupDone()">오늘 백업함</button></div></div>';
+}
+
+function vEvayonLinks(){
+  return '<div class="card" style="border-left:4px solid #f76707"><h2 style="margin-top:0">🔗 에바연 바로가기</h2><div class="row">'+
+  '<a class="btn" href="https://www.educereedu.com" target="_blank" style="text-decoration:none;display:inline-block">🌐 메인 홈페이지 열기</a>'+
+  '<a class="btn ghost" href="https://imweb.me" target="_blank" style="text-decoration:none;display:inline-block">⚙️ 아임웹 관리자 로그인</a>'+
+  '</div><div class="hint" style="margin-top:8px">관리자는 imweb.me 로그인 후 "사이트 관리"에서 educereedu.com을 선택해 들어갑니다.</div></div>';
+}
+
+function vStudiaLinks(){
+  return '<div class="card" style="border-left:4px solid #7048e8"><h2 style="margin-top:0">🔗 스터디아 바로가기</h2><div class="row">'+
+  '<a class="btn" href="https://studia.co.kr" target="_blank" style="text-decoration:none;display:inline-block">🌐 스터디아 열기</a>'+
+  '<a class="btn ghost" href="https://studia.co.kr/admin.html" target="_blank" style="text-decoration:none;display:inline-block">⚙️ 관리자 페이지</a>'+
+  '<a class="btn ghost" href="https://supabase.com/dashboard" target="_blank" style="text-decoration:none;display:inline-block">🗄️ Supabase 대시보드</a>'+
+  '</div><div class="hint" style="margin-top:8px">관리자 페이지는 관리자 이메일로 로그인해야 열립니다. 주소는 외부에 공유하지 마세요. Supabase는 DB·결제 함수 관리용입니다.</div></div>';
+}
+
+/* ===== 화면: 주간 실적 ===== */
+function vMetrics(){
+  var rows = BIZ.map(function(b){
+    var m = getMetric(curWeek,b.id);
+    var cells = METRIC_DEFS.map(function(md){
+      return '<td style="width:110px"><input type="number" min="0" class="num" value="'+esc(m[md.k])+'" onchange="App.setMetric(\''+b.id+'\',\''+md.k+'\',this.value)"></td>';
+    }).join("");
+    return '<tr><td><b>'+esc(b.short)+'</b></td>'+cells+
+      '<td><input value="'+esc(m.note)+'" placeholder="메모" onchange="App.setMetric(\''+b.id+'\',\'note\',this.value)"></td></tr>';
+  }).join("");
+
+  var weeks = Object.keys(state.metrics).sort().slice(-6);
+  var maxRev = 1;
+  weeks.forEach(function(wk){ var s=0; BIZ.forEach(function(b){ var m=(state.metrics[wk]||{})[b.id]; if(m) s+=+m.rev||0; }); if(s>maxRev) maxRev=s; });
+  var hist = weeks.map(function(wk){
+    var s={inq:0,con:0,pay:0,rev:0};
+    BIZ.forEach(function(b){ var m=(state.metrics[wk]||{})[b.id]; if(m){ s.inq+=+m.inq||0; s.con+=+m.con||0; s.pay+=+m.pay||0; s.rev+=+m.rev||0; } });
+    var w = Math.round(s.rev/maxRev*100);
+    return '<tr><td>'+weekLabel(wk)+'</td><td class="num">'+fmt(s.inq)+'</td><td class="num">'+fmt(s.con)+'</td><td class="num">'+fmt(s.pay)+'</td><td class="num">'+fmt(s.rev)+'</td>'+
+      '<td style="width:30%"><div class="barwrap"><div class="bar" style="width:'+w+'%"></div></div></td></tr>';
+  }).join("") || '<tr><td colspan="6" class="hint">아직 기록이 없습니다.</td></tr>';
+
+  return '<h1>주간 실적</h1><div class="sub">조회수가 아니라 행동 지표(문의·상담·결제)만 봅니다.</div>'+
+  '<div class="card"><div class="row" style="margin-bottom:12px">'+
+    '<button class="btn sm gray" onclick="App.week(-1)">← 지난주</button>'+
+    '<b>'+weekLabel(curWeek)+'</b>'+
+    '<button class="btn sm gray" onclick="App.week(1)">다음주 →</button>'+
+    (curWeek!==mondayOf()? '<button class="btn sm ghost" onclick="App.weekNow()">이번 주로</button>':"")+
+  '</div>'+
+  '<table><tr><th>사업</th><th>문의·신청</th><th>상담</th><th>등록·결제</th><th>매출(원)</th><th>메모</th></tr>'+rows+'</table>'+
+  '<div class="hint" style="margin-top:8px">입력하면 자동 저장됩니다.</div></div>'+
+  '<div class="card"><h2 style="margin-top:0">최근 흐름 (전체 합계)</h2>'+
+  '<table><tr><th>주</th><th>문의</th><th>상담</th><th>결제</th><th>매출</th><th>매출 추이</th></tr>'+hist+'</table></div>';
+}
+
+/* ===== 화면: 파이프라인 ===== */
+function vPipe(){
+  var counts = STAGES.map(function(s){
+    var n = state.pipeline.filter(function(p){return p.stage===s;}).length;
+    return '<span class="badge" style="margin-right:6px">'+s+' '+n+'</span>';
+  }).join("");
+  var rows = state.pipeline.map(function(p){
+    var bizOpt = BIZ.map(function(b){ return '<option value="'+b.id+'" '+(p.biz===b.id?"selected":"")+'>'+b.short+'</option>'; }).join("");
+    var stOpt = STAGES.map(function(s){ return '<option '+(p.stage===s?"selected":"")+'>'+s+'</option>'; }).join("");
+    return '<tr>'+
+      '<td style="width:130px"><input value="'+esc(p.name)+'" placeholder="이름" onchange="App.setPipe(\''+p.id+'\',\'name\',this.value)"></td>'+
+      '<td style="width:100px"><select onchange="App.setPipe(\''+p.id+'\',\'biz\',this.value)">'+bizOpt+'</select></td>'+
+      '<td style="width:110px"><select onchange="App.setPipe(\''+p.id+'\',\'stage\',this.value)">'+stOpt+'</select></td>'+
+      '<td><input value="'+esc(p.note)+'" placeholder="메모 (학년, 니즈, 다음 연락일 등)" onchange="App.setPipe(\''+p.id+'\',\'note\',this.value)"></td>'+
+      '<td style="width:120px"><input type="date" value="'+esc(p.date)+'" onchange="App.setPipe(\''+p.id+'\',\'date\',this.value)"></td>'+
+      '<td style="width:36px"><button class="del" onclick="App.delPipe(\''+p.id+'\')">✕</button></td></tr>';
+  }).join("") || '<tr><td colspan="6" class="hint">아직 등록된 고객이 없습니다. 문의가 오면 바로 추가하세요. 재상담 대상 학부모도 여기에 넣어 관리하면 좋습니다.</td></tr>';
+  return '<h1>상담·고객 파이프라인</h1><div class="sub">문의 → 상담 → 등록·결제까지, 한 사람도 잊지 않기 위한 목록입니다.</div>'+
+  '<div class="card"><div style="margin-bottom:10px">'+counts+'</div>'+
+  '<table><tr><th>이름</th><th>사업</th><th>단계</th><th>메모</th><th>최근 접점</th><th></th></tr>'+rows+'</table>'+
+  '<button class="btn sm" style="margin-top:10px" onclick="App.addPipe()">+ 고객 추가</button></div>';
+}
+
+/* ===== 화면: 콘텐츠 캘린더 ===== */
+function vCal(){
+  var items = state.contents.slice().sort(function(a,b){ return (a.date||"9999") < (b.date||"9999") ? -1:1; });
+  var rows = items.map(function(c){
+    var bizOpt = BIZ.map(function(b){ return '<option value="'+b.id+'" '+(c.biz===b.id?"selected":"")+'>'+b.short+'</option>'; }).join("");
+    var chOpt = CH.map(function(s){ return '<option '+(c.channel===s?"selected":"")+'>'+s+'</option>'; }).join("");
+    var stOpt = CSTAT.map(function(s){ return '<option '+(c.status===s?"selected":"")+'>'+s+'</option>'; }).join("");
+    var late = c.status!=="발행완료" && c.date && c.date < todayStr();
+    return '<tr'+(late?' style="background:#fff5f5"':"")+'>'+
+      '<td style="width:120px"><input type="date" value="'+esc(c.date)+'" onchange="App.setCal(\''+c.id+'\',\'date\',this.value)"></td>'+
+      '<td style="width:95px"><select onchange="App.setCal(\''+c.id+'\',\'biz\',this.value)">'+bizOpt+'</select></td>'+
+      '<td style="width:120px"><select onchange="App.setCal(\''+c.id+'\',\'channel\',this.value)">'+chOpt+'</select></td>'+
+      '<td><input value="'+esc(c.title)+'" placeholder="제목·주제" onchange="App.setCal(\''+c.id+'\',\'title\',this.value)"></td>'+
+      '<td style="width:100px"><select onchange="App.setCal(\''+c.id+'\',\'status\',this.value)">'+stOpt+'</select></td>'+
+      '<td style="width:36px"><button class="del" onclick="App.delCal(\''+c.id+'\')">✕</button></td></tr>';
+  }).join("") || '<tr><td colspan="6" class="hint">계획된 콘텐츠가 없습니다. 학부모가 반복해서 묻는 질문 하나를 첫 콘텐츠로 잡아보세요.</td></tr>';
+  return '<h1>콘텐츠·마케팅 캘린더</h1><div class="sub">발행 예정과 완료를 한 줄씩 기록합니다. 날짜가 지난 미발행 건은 붉게 표시됩니다.</div>'+
+  '<div class="card"><table><tr><th>날짜</th><th>사업</th><th>채널</th><th>제목·주제</th><th>상태</th><th></th></tr>'+rows+'</table>'+
+  '<button class="btn sm" style="margin-top:10px" onclick="App.addCal()">+ 콘텐츠 추가</button></div>';
+}
+
+/* ===== 화면: 현금흐름 ===== */
+function vCash(){
+  var items = state.cash.filter(function(c){ return c.month===curMonth; });
+  var inc=0, out=0;
+  items.forEach(function(c){ if(c.type==="수입") inc+=+c.amount||0; else out+=+c.amount||0; });
+  var rows = items.map(function(c){
+    var bizOpt = '<option value="common" '+(c.biz==="common"?"selected":"")+'>공통</option>'+BIZ.map(function(b){ return '<option value="'+b.id+'" '+(c.biz===b.id?"selected":"")+'>'+b.short+'</option>'; }).join("");
+    return '<tr>'+
+      '<td style="width:90px"><select onchange="App.setCash(\''+c.id+'\',\'type\',this.value)"><option '+(c.type==="수입"?"selected":"")+'>수입</option><option '+(c.type==="지출"?"selected":"")+'>지출</option></select></td>'+
+      '<td style="width:100px"><select onchange="App.setCash(\''+c.id+'\',\'biz\',this.value)">'+bizOpt+'</select></td>'+
+      '<td><input value="'+esc(c.item)+'" placeholder="항목 (예: 수강료, 임대료, 광고비)" onchange="App.setCash(\''+c.id+'\',\'item\',this.value)"></td>'+
+      '<td style="width:140px"><input type="number" class="num" value="'+esc(c.amount)+'" onchange="App.setCash(\''+c.id+'\',\'amount\',this.value)"></td>'+
+      '<td style="width:36px"><button class="del" onclick="App.delCash(\''+c.id+'\')">✕</button></td></tr>';
+  }).join("") || '<tr><td colspan="5" class="hint">이번 달 기록이 없습니다. 큰 항목만 적어도 흐름이 보입니다.</td></tr>';
+  var net = inc-out;
+  return '<h1>현금흐름 (간단 기록)</h1><div class="sub">정확한 회계장부가 아니라, 매달 돈의 방향을 확인하는 용도입니다.</div>'+
+  '<div class="card"><div class="row" style="margin-bottom:12px">'+
+    '<button class="btn sm gray" onclick="App.month(-1)">←</button><b>'+curMonth+'</b><button class="btn sm gray" onclick="App.month(1)">→</button></div>'+
+  '<div class="grid4" style="margin-bottom:12px">'+
+    kpi("수입 합계",'<span class="plus">'+fmt(inc)+'원</span>')+kpi("지출 합계",'<span class="minus">'+fmt(out)+'원</span>')+
+    kpi("순현금흐름",(net>=0?'<span class="plus">+':'<span class="minus">')+fmt(net)+'원</span>')+kpi("기록 건수",items.length+"건")+
+  '</div>'+
+  '<table><tr><th>구분</th><th>사업</th><th>항목</th><th>금액(원)</th><th></th></tr>'+rows+'</table>'+
+  '<button class="btn sm" style="margin-top:10px" onclick="App.addCash()">+ 기록 추가</button></div>';
+}
+
+/* ===== 화면: 운영 루틴 ===== */
+function routineDue(x){
+  var limit = x.cycle==="매주"?7 : x.cycle==="매월"?31 : 92;
+  return daysSince(x.lastDone) >= limit;
+}
+function vRoutine(){
+  var rows = state.routines.map(function(x){
+    var due = routineDue(x);
+    var last = x.lastDone? x.lastDone+" ("+daysSince(x.lastDone)+"일 전)" : "기록 없음";
+    return '<tr>'+
+      '<td><span class="badge '+(due?"bad":"ok")+'">'+x.cycle+'</span></td>'+
+      '<td>'+esc(x.text)+(due?' <b style="color:var(--bad);font-size:12px">← 할 차례</b>':"")+'</td>'+
+      '<td style="width:170px" class="hint">'+last+'</td>'+
+      '<td style="width:90px"><button class="btn sm '+(due?"":"gray")+'" onclick="App.doneRoutine(\''+x.id+'\')">완료</button></td>'+
+      '<td style="width:36px"><button class="del" onclick="App.delRoutine(\''+x.id+'\')">✕</button></td></tr>';
+  }).join("");
+  return '<h1>정기 운영 루틴</h1><div class="sub">1인 운영에서 놓치기 쉬운 일들입니다. 완료를 누르면 날짜가 기록되고, 주기가 지나면 다시 알려줍니다.</div>'+
+  '<div class="card"><table><tr><th>주기</th><th>할 일</th><th>마지막 완료</th><th></th><th></th></tr>'+rows+'</table>'+
+  '<div class="row" style="margin-top:12px">'+
+    '<select id="newRoutineCycle"><option>매주</option><option>매월</option><option>분기</option></select>'+
+    '<input id="newRoutineText" placeholder="새 루틴 추가" style="flex:1">'+
+    '<button class="btn sm" onclick="App.addRoutine()">추가</button></div>'+
+  '<div class="hint" style="margin-top:10px">세금 일정은 일반 기준입니다. 사업자 유형(간이/일반, 법인 여부)에 따라 다르니 세무사에게 확인하세요.</div></div>';
+}
+
+/* ===== 화면: AI 어시스턴트 ===== */
+function vAI(){
+  var msgs = state.chat.map(function(m){
+    return '<div class="msg '+(m.role==="user"?"user":"ai")+'">'+esc(m.text)+'</div>';
+  }).join("") || '<div class="hint">예시 질문<br>· 이번 주 실적을 보고 다음 주에 뭘 먼저 해야 할까?<br>· 에바연 무료 진단 홍보 문자 초안 써줘<br>· 학습관 관리 리포트에 어떤 항목을 넣으면 좋을까?</div>';
+  var noKey = !state.settings.apiKey;
+  return '<h1>AI 어시스턴트</h1><div class="sub">대시보드에 기록된 현재 상황을 함께 읽고 답합니다. (인터넷 연결 필요)</div>'+
+  (noKey? '<div class="alert">API 키가 아직 없습니다. <button class="btn sm ghost" onclick="App.go(\'set\')">설정에서 입력</button> 하면 사용할 수 있어요.</div>':"")+
+  '<div class="card"><div class="chat" id="chatBox">'+msgs+'</div>'+
+  '<div id="aiStatus" class="hint"></div>'+
+  '<div class="row"><textarea id="aiInput" style="flex:1;min-height:48px" placeholder="질문을 입력하세요"></textarea>'+
+  '<button class="btn" id="aiSend" onclick="App.ask()" '+(noKey?"disabled":"")+'>보내기</button></div>'+
+  '<div class="row" style="margin-top:8px"><button class="btn sm gray" onclick="App.clearChat()">대화 지우기</button></div></div>';
+}
+function buildContext(){
+  var wk = mondayOf();
+  var lines = ["[오늘] "+todayStr(), "[사업 현황]"];
+  BIZ.forEach(function(b){
+    var d = state.biz[b.id];
+    var open = d.tasks.filter(function(x){return !x.done;}).map(function(x){return x.text;});
+    lines.push("- "+b.name+" | 상태: "+d.status+" | 문제: "+d.problem+" | 방향: "+d.direction+" | 남은 할 일: "+(open.join(" / ")||"없음")+(d.memo? " | 메모: "+d.memo.slice(0,300):""));
+  });
+  lines.push("[이번 주 실적 "+weekLabel(wk)+"]");
+  BIZ.forEach(function(b){ var m=getMetric(wk,b.id); lines.push("- "+b.short+": 문의 "+m.inq+", 상담 "+m.con+", 결제 "+m.pay+", 매출 "+m.rev+"원"+(m.note?" ("+m.note+")":"")); });
+  var weeks = Object.keys(state.metrics).sort().slice(-4);
+  if(weeks.length>1){
+    lines.push("[최근 주간 합계]");
+    weeks.forEach(function(w){ var s={inq:0,con:0,pay:0,rev:0}; BIZ.forEach(function(b){ var m=(state.metrics[w]||{})[b.id]; if(m){s.inq+=+m.inq||0;s.con+=+m.con||0;s.pay+=+m.pay||0;s.rev+=+m.rev||0;} }); lines.push("- "+weekLabel(w)+": 문의 "+s.inq+", 상담 "+s.con+", 결제 "+s.pay+", 매출 "+s.rev+"원"); });
+  }
+  if(state.pipeline.length){
+    lines.push("[파이프라인]");
+    state.pipeline.forEach(function(p){ lines.push("- "+p.name+" ("+bizName(p.biz)+", "+p.stage+") "+(p.note||"")); });
+  }
+  var due = state.routines.filter(routineDue).map(function(x){return x.text;});
+  if(due.length) lines.push("[밀린 운영 루틴] "+due.join(" / "));
+  var mc = state.cash.filter(function(c){return c.month===monthStr();});
+  if(mc.length){ var i=0,o=0; mc.forEach(function(c){ if(c.type==="수입") i+=+c.amount||0; else o+=+c.amount||0; }); lines.push("[이번 달 현금흐름] 수입 "+i+"원, 지출 "+o+"원, 순 "+(i-o)+"원"); }
+  var up = state.contents.filter(function(c){return c.status!=="발행완료";}).slice(0,10);
+  if(up.length){ lines.push("[예정 콘텐츠]"); up.forEach(function(c){ lines.push("- "+(c.date||"날짜미정")+" "+bizName(c.biz)+" "+c.channel+" : "+c.title+" ("+c.status+")"); }); }
+  var dow2 = (new Date().getDay()+6)%7;
+  var tb2 = (state.schedule && state.schedule.blocks ? state.schedule.blocks : []).filter(function(b){return +b.day===dow2;}).sort(function(a,b){return toMin(a.start)-toMin(b.start);});
+  if(tb2.length){ lines.push("[오늘 일정]"); tb2.forEach(function(b){ lines.push("- "+b.start+"~"+b.end+" ["+schedCat(b.cat).short+"] "+b.label); }); }
+  if(state.orda){
+    var ow = (state.orda.weeks||{})[mondayOf()];
+    if(ow && (ow.pay!==""||ow.unpaid!==""||ow.mission!==""||ow.nofb!==""||ow.low!==""||ow.gwanCnt!=="")){
+      lines.push("[오르다 주간 점검] 납부율 "+(ow.pay||"?")+"%, 미납 "+(ow.unpaid||"?")+"명, 7일 미션완료율 "+(ow.mission||"?")+"%, 2주 무피드백 "+(ow.nofb||"?")+"명, 완료율 50% 미만 "+(ow.low||"?")+"명, 학습관 이용 "+(ow.gwanCnt||"?")+"명"+(ow.note? " ("+ow.note+")":""));
+    }
+    if(state.orda.lastBackup) lines.push("[오르다 마지막 백업] "+state.orda.lastBackup+" ("+daysSince(state.orda.lastBackup)+"일 전)");
+  }
+  if(state.grid){
+    var gt = state.grid.topics.filter(Boolean), gf = state.grid.formats.filter(Boolean);
+    var gfilled = 0;
+    for(var gr=0;gr<5;gr++){ for(var gc=0;gc<6;gc++){ var gcc=(state.grid.cells||{})["r"+gr+"c"+gc]; if(gcc && gcc.text) gfilled++; } }
+    if(gt.length || gfilled) lines.push("[콘텐츠 기획 6x5] 주제: "+(gt.join(", ")||"미정")+" | 포맷: "+(gf.join(", ")||"미정")+" | 채운 칸 "+gfilled+"/30");
+  }
+  return lines.join("\n");
+}
+var SYS_PROMPT = "너는 에듀케레 영수학원, 에듀케레 바른학습관, 에바연 바른교육연구소, 스터디아(studia.co.kr), 그리고 개인 프로젝트인 한글로우(외국인 대상 한국어 학습 앱, 개발 중)까지 다섯 사업을 혼자 운영하는 원장님(이쌤)의 비즈니스 어시스턴트다. 아래 대시보드 데이터가 현재 상황의 전부다. 원칙: (1) 데이터에 없는 것은 추측하지 말고 솔직하게 확인이 필요하다고 말한다. (2) 새 아이디어보다 이미 가진 자산을 유입·상담·판매로 연결하는 작은 다음 행동을 우선한다. (3) 답은 한국어로, 실행 가능한 순서로, 간결하게. (4) 과장된 성과 약속이나 가짜 후기 같은 방식은 절대 권하지 않는다.";
+function ask(){
+  var inp = document.getElementById("aiInput");
+  var q = inp.value.trim();
+  if(!q) return;
+  if(!state.settings.apiKey){ setAIStatus("설정에서 API 키를 먼저 입력해주세요."); return; }
+  state.chat.push({role:"user", text:q});
+  if(state.chat.length>40) state.chat = state.chat.slice(-40);
+  save(); render();
+  setAIStatus("생각하는 중…");
+  var msgs = state.chat.map(function(m){ return {role: m.role==="user"?"user":"assistant", content: m.text}; });
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key": state.settings.apiKey,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify({ model: state.settings.model, max_tokens: 1500,
+      system: SYS_PROMPT+"\n\n=== 대시보드 데이터 ===\n"+buildContext(), messages: msgs })
+  }).then(function(res){ return res.json(); }).then(function(data){
+    if(data && data.content && data.content.length){
+      var txt = data.content.map(function(c){ return c.text||""; }).join("");
+      state.chat.push({role:"ai", text:txt});
+      save(); render(); setAIStatus("");
+    } else if(data && data.error){
+      var m = data.error.message||"오류";
+      if(data.error.type==="authentication_error") m = "API 키가 올바르지 않습니다. 설정에서 다시 확인해주세요.";
+      setAIStatus("⚠️ "+m);
+    } else { setAIStatus("⚠️ 알 수 없는 응답입니다."); }
+  }).catch(function(e){ setAIStatus("⚠️ 연결 실패: 인터넷 연결과 API 키를 확인해주세요. ("+e.message+")"); });
+}
+function setAIStatus(s){ var el=document.getElementById("aiStatus"); if(el) el.textContent=s; var box=document.getElementById("chatBox"); if(box) box.scrollTop=box.scrollHeight; }
+
+/* ===== 화면: 설정 ===== */
+function vSet(){
+  return '<h1>설정 · 백업</h1><div class="sub">데이터는 이 컴퓨터의 브라우저 안에만 저장됩니다. 정기 백업이 중요합니다.</div>'+
+  '<div class="card"><h2 style="margin-top:0">💾 데이터 백업·복원</h2>'+
+  '<div class="row"><button class="btn" onclick="App.exportJSON()">JSON 백업 내려받기</button>'+
+  '<label class="btn ghost" style="cursor:pointer">백업 불러오기<input type="file" accept=".json" style="display:none" onchange="App.importJSON(this)"></label>'+
+  '<button class="btn ghost" onclick="App.copyMD()">옵시디언용 요약 복사</button></div>'+
+  '<div class="hint" style="margin-top:10px">마지막 백업: '+(state.lastExport||"기록 없음")+'<br>'+
+  '· <b>JSON 백업</b>: 매주 1회 내려받아 옵시디언 볼트 폴더 등에 보관하세요. 브라우저 데이터를 지우면 기록이 사라질 수 있습니다.<br>'+
+  '· <b>옵시디언용 요약</b>: 이번 주 상황을 마크다운으로 복사합니다. 옵시디언 새 노트에 붙여넣으면 됩니다.</div></div>'+
+  '<div class="card"><h2 style="margin-top:0">🤖 Claude API 연결</h2>'+
+  '<div class="kv"><b>API 키</b><input type="password" style="width:100%" value="'+esc(state.settings.apiKey)+'" placeholder="sk-ant-..." onchange="App.setSetting(\'apiKey\',this.value)"></div>'+
+  '<div class="kv"><b>모델</b><select onchange="App.setSetting(\'model\',this.value)">'+
+    '<option value="claude-sonnet-5" '+(state.settings.model==="claude-sonnet-5"?"selected":"")+'>Claude Sonnet 5 (추천)</option>'+
+    '<option value="claude-haiku-4-5-20251001" '+(state.settings.model==="claude-haiku-4-5-20251001"?"selected":"")+'>Claude Haiku 4.5 (더 저렴·빠름)</option>'+
+    '<option value="claude-opus-4-8" '+(state.settings.model==="claude-opus-4-8"?"selected":"")+'>Claude Opus 4.8 (더 깊은 분석)</option>'+
+  '</select></div>'+
+  '<div class="hint">· 키 발급: console.anthropic.com → API Keys → Create Key<br>'+
+  '· 키는 이 컴퓨터에만 저장됩니다. <b>다른 사람과 공유하거나 인터넷에 올리지 마세요.</b><br>'+
+  '· 사용한 만큼 요금이 부과됩니다(질문당 수십 원 수준, 모델에 따라 다름).</div></div>'+
+  '<div class="card"><h2 style="margin-top:0">⚠️ 초기화</h2>'+
+  '<button class="btn sm gray" onclick="App.reset()">모든 데이터 초기화</button>'+
+  '<div class="hint" style="margin-top:6px">처음 상태(볼트 기반 기본값)로 되돌립니다. 백업을 먼저 내려받으세요.</div></div>';
+}
+
+/* ===== 화면: 주간 일정표 ===== */
+function schedCats(){ return BIZ.concat([{id:"common", name:"공통·개인", short:"공통", color:"#868e96"}]); }
+function toMin(t){ var p=String(t||"0:0").split(":"); return (parseInt(p[0],10)||0)*60+(parseInt(p[1],10)||0); }
+function schedCat(id){ return schedCats().find(function(x){return x.id===id;}) || {short:"공통", color:"#868e96"}; }
+function vSched(){
+  var sc = state.schedule;
+  var startM = sc.startHour*60, endM = sc.endHour*60, span = Math.max(endM-startM,60);
+  var H = 600, hourPx = H*60/span;
+  var cols = "";
+  for(var i=0;i<7;i++){
+    var blocks = sc.blocks.filter(function(b){return +b.day===i;});
+    var bs = blocks.map(function(b){
+      var c = schedCat(b.cat);
+      var top = (toMin(b.start)-startM)/span*H;
+      var h = Math.max((toMin(b.end)-toMin(b.start))/span*H, 16);
+      if(top < 0){ h += top; top = 0; }
+      if(top >= H || h <= 0) return "";
+      if(top+h > H) h = H-top;
+      return '<div class="sblk" style="top:'+top+'px;height:'+h+'px;background:'+c.color+'" title="'+esc(b.label)+'">'+esc(b.label)+'<small>'+esc(b.start)+'–'+esc(b.end)+'</small></div>';
+    }).join("");
+    cols += '<div class="scol" style="background:repeating-linear-gradient(to bottom,#f1f2f5 0,#f1f2f5 1px,transparent 1px,transparent '+hourPx+'px)'+(i>=5?';background-color:#fcfbf7':'')+'">'+bs+'</div>';
+  }
+  var axis = "";
+  for(var hh=sc.startHour+1; hh<sc.endHour; hh++){
+    var y = (hh*60-startM)/span*H;
+    axis += '<span style="top:'+y+'px">'+hh+'시</span>';
+  }
+  var head = '<div class="shead"><div style="width:46px"></div>'+DAYN.map(function(d,i){
+    return '<div style="flex:1;text-align:center;font-weight:700;font-size:13px;padding:6px 0;'+(i>=5?'color:#e03131':'')+'">'+d+'</div>';
+  }).join("")+'</div>';
+  var legend = schedCats().map(function(c){
+    return '<span class="badge" style="background:'+c.color+';color:#fff;margin-right:6px">'+esc(c.short)+'</span>';
+  }).join("");
+  var rows = sc.blocks.slice().sort(function(a,b){ return (a.day-b.day) || (toMin(a.start)-toMin(b.start)); }).map(function(b){
+    var dOpt = DAYN.map(function(d,i){ return '<option value="'+i+'" '+(+b.day===i?"selected":"")+'>'+d+'</option>'; }).join("");
+    var cOpt = schedCats().map(function(c){ return '<option value="'+c.id+'" '+(b.cat===c.id?"selected":"")+'>'+esc(c.short)+'</option>'; }).join("");
+    return '<tr>'+
+      '<td style="width:68px"><select onchange="App.setSchedBlk(\''+b.id+'\',\'day\',this.value)">'+dOpt+'</select></td>'+
+      '<td><input value="'+esc(b.label)+'" placeholder="일정 이름 (예: 학원 수업, 학습관 순회, 콘텐츠 작성)" onchange="App.setSchedBlk(\''+b.id+'\',\'label\',this.value)"></td>'+
+      '<td style="width:108px"><input type="time" value="'+esc(b.start)+'" onchange="App.setSchedBlk(\''+b.id+'\',\'start\',this.value)"></td>'+
+      '<td style="width:108px"><input type="time" value="'+esc(b.end)+'" onchange="App.setSchedBlk(\''+b.id+'\',\'end\',this.value)"></td>'+
+      '<td style="width:100px"><select onchange="App.setSchedBlk(\''+b.id+'\',\'cat\',this.value)">'+cOpt+'</select></td>'+
+      '<td style="width:64px"><button class="btn sm gray" onclick="App.copySchedBlk(\''+b.id+'\')">복제</button></td>'+
+      '<td style="width:36px"><button class="del" onclick="App.delSchedBlk(\''+b.id+'\')">✕</button></td></tr>';
+  }).join("") || '<tr><td colspan="7" class="hint">아직 일정이 없습니다. "+ 일정 추가"로 반복되는 한 주 일과(수업, 순회, 상담 시간, 콘텐츠 작성, 스터디아 점검)를 넣어보세요.</td></tr>';
+  function hourOpts(sel,from,to){ var s=""; for(var h=from;h<=to;h++) s+='<option value="'+h+'" '+(+sel===h?"selected":"")+'>'+h+':00</option>'; return s; }
+  return '<h1>주간 일정표</h1><div class="sub">네 사업을 한 몸으로 도는 한 주 시간 설계입니다. 색깔이 곧 사업입니다.</div>'+
+  '<div class="card">'+
+    '<div class="row" style="margin-bottom:10px">'+legend+
+      '<span style="flex:1"></span><span class="hint">표시 시간</span>'+
+      '<select onchange="App.setSchedOpt(\'startHour\',this.value)">'+hourOpts(sc.startHour,5,12)+'</select><span class="hint">~</span>'+
+      '<select onchange="App.setSchedOpt(\'endHour\',this.value)">'+hourOpts(sc.endHour,17,24)+'</select>'+
+    '</div>'+head+
+    '<div class="sgrid" style="height:'+H+'px"><div class="saxis">'+axis+'</div>'+cols+'</div>'+
+  '</div>'+
+  '<div class="card"><h2 style="margin-top:0">일정 편집</h2>'+
+    '<table><tr><th>요일</th><th>일정</th><th>시작</th><th>끝</th><th>구분</th><th></th><th></th></tr>'+rows+'</table>'+
+    '<button class="btn sm" style="margin-top:10px" onclick="App.addSchedBlk()">+ 일정 추가</button>'+
+    '<div class="hint" style="margin-top:8px">"복제"를 누르면 같은 일정이 다음 요일에 복사됩니다. 오늘 요일의 일정은 통합 홈에도 표시됩니다.</div></div>';
+}
+
+/* ===== 화면: 콘텐츠 기획 6x5 ===== */
+var FMT_LIST = ["핵심형","비교형","토크형","설명형","리스트형","혼합형","분할화면","판서 설명","1인 2역","실내 토크","얼굴 없는 애니","일상기록","거리 인터뷰 1인","거리 인터뷰 여러 명","1인 상황극","채팅형 대화","게임 해설","자료 화면 설명","편집 클립","실물 설명","반응 설명","반응형","노트 설명","대화 클립","차 안 대화"];
+function gridCell(r,c){ if(!state.grid.cells["r"+r+"c"+c]) state.grid.cells["r"+r+"c"+c]={text:"",sent:false}; return state.grid.cells["r"+r+"c"+c]; }
+var CATS7 = ["입시전반","학생부","교과세특","탐구활동·주제","영어학습","수학학습","학습전반"];
+var SEASON = {
+ 1:{ev:"정시 합격 발표 · 예비고 겨울방학", ideas:[["입시전반","정시 추가합격, 전화 오기 전에 알아야 할 것"],["학생부","예비고1, 3월 전에 이해해야 할 생기부 구조"],["교과세특","겨울방학에 미리 잡는 1학기 세특 소재"],["탐구활동","방학 탐구주제, 내 관심사에서 찾는 3단계"],["영어학습","고등 영어는 중등 영어와 무엇이 다른가"],["수학학습","예비고1 수학, 무작정 선행보다 중요한 것"],["학습전반","겨울방학 루틴, 작심삼일을 막는 주간 설계"]]},
+ 2:{ev:"신학기 준비 · 교재/계획 시즌", ideas:[["입시전반","올해 대입 주요 일정, 월별로 한눈에 보기"],["학생부","새 학년 첫 달, 생기부 관리가 갈리는 지점"],["교과세특","3월 수업 첫 주에 세특 기회를 만드는 질문법"],["탐구활동","1학기 탐구 계획, 2월에 세워야 하는 이유"],["영어학습","새 학기 영어 내신, 교과서 분석부터"],["수학학습","새 학기 수학, 지난 학년 구멍 찾기 체크"],["학습전반","신학기 시간표에 맞춘 공부 루틴 리셋"]]},
+ 3:{ev:"신학기 시작 · 3월 전국연합학력평가", ideas:[["입시전반","3월 학평 성적표, 등급보다 봐야 할 숫자"],["학생부","1학기 수행평가 일정을 지금 달력에 적어야 하는 이유"],["교과세특","수업 발표 한 번이 세특 한 줄이 되는 과정"],["탐구활동","교과서 단원에서 탐구주제 뽑는 법"],["영어학습","고1 첫 영어 내신, 범위 분석 루틴"],["수학학습","3월 수학, 개념 노트 만드는 법"],["학습전반","새 학기 2주차 슬럼프, 신호와 대처"]]},
+ 4:{ev:"1학기 중간고사 대비", ideas:[["입시전반","중간고사가 대입에 미치는 실제 비중"],["학생부","시험 기간에도 생기부를 챙기는 최소 행동"],["교과세특","중간 범위에서 세특으로 이어질 질문 만들기"],["탐구활동","시험 끝나고 시작할 탐구활동 미리 정하기"],["영어학습","영어 내신 벼락치기, 순서가 절반이다"],["수학학습","수학 시험 2주 전, 오답 정리 우선순위"],["학습전반","시험 D-14 플래너 짜는 법"]]},
+ 5:{ev:"중간고사 이후 · 수행평가 집중 시기", ideas:[["입시전반","중간 성적으로 보는 수시 vs 정시 방향 점검"],["학생부","수행평가가 생기부에 남는 방식"],["교과세특","발표 수행을 세특 문장으로 연결하는 법"],["탐구활동","교과 연계 탐구, 5월에 시작해야 기말 전에 끝난다"],["영어학습","영어 수행(에세이·발표) 감점 포인트"],["수학학습","수학 서술형, 부분점수 받는 답안 쓰기"],["학습전반","중간 이후 늘어진 루틴 다시 세우기"]]},
+ 6:{ev:"6월 모의평가 · 기말고사 대비", ideas:[["입시전반","6월 모평이 중요한 진짜 이유"],["학생부","1학기 생기부 마감 전 확인할 것들"],["교과세특","기말 범위 세특, 마지막 기회 잡는 법"],["탐구활동","탐구 보고서, 기말 전 마무리 체크리스트"],["영어학습","영어 모의고사 유형별 시간 배분"],["수학학습","수학 기말, 중간 오답에서 출발하라"],["학습전반","기말과 모평이 겹치는 6월, 우선순위 정하기"]]},
+ 7:{ev:"기말 마무리 · 여름방학 시작 · 1학기 생기부 점검", ideas:[["입시전반","여름방학, 수시파와 정시파의 갈림길 점검"],["학생부","1학기 생기부, 방학 중 점검해야 할 항목"],["교과세특","기말 끝난 지금이 세특 보완의 골든타임"],["탐구활동","여름방학 탐구를 2학기 세특으로 연결하는 법"],["영어학습","여름방학 영어, 단어장 말고 이것부터"],["수학학습","방학 수학, 다음 학기 선행 vs 지난 학기 복습?"],["학습전반","여름방학 하루 루틴과 무너지는 순간 대처법"]]},
+ 8:{ev:"여름방학 · 수시 준비 본격화", ideas:[["입시전반","수시 원서 6장, 8월에 정리해야 할 기준"],["학생부","생기부 열람, 여름에 확인해야 할 항목"],["교과세특","2학기 세특 소재, 방학에 미리 만드는 법"],["탐구활동","방학 탐구활동을 보고서로 남기는 형식"],["영어학습","여름 영어 특강, 듣기 전에 확인할 것"],["수학학습","수학 방학 30일 복습 플랜"],["학습전반","개학 2주 전, 생활 리듬 되돌리기"]]},
+ 9:{ev:"수시 원서접수 · 9월 모의평가 · 2학기 시작", ideas:[["입시전반","수시 원서, 마지막까지 흔들리는 이유와 판단 기준"],["학생부","고1·2가 9월에 해야 할 생기부 행동"],["교과세특","2학기 첫 수업에서 세특 기회 만들기"],["탐구활동","2학기 탐구주제, 1학기와 연결하면 강해진다"],["영어학습","9월 모평 영어, 등급을 가르는 문제 유형"],["수학학습","수학 2학기 단원, 1학기와의 연결 지점"],["학습전반","2학기 시작 루틴, 1학기 실패에서 배우기"]]},
+ 10:{ev:"수능 D-30 · 2학기 중간고사 · 면접 준비", ideas:[["입시전반","수능 한 달 전, 해야 할 것과 버릴 것"],["학생부","면접에서 생기부 질문이 나오는 방식"],["교과세특","2학기 중간 세특이 더 중요한 학년은?"],["탐구활동","탐구활동이 면접 질문으로 이어지는 경우"],["영어학습","수능 영어, 마지막 30일 루틴"],["수학학습","수학 실전 감각, 시간 재고 푸는 법"],["학습전반","수능·중간 병행 시기의 컨디션 관리"]]},
+ 11:{ev:"수능 · 수능 이후 면접·논술", ideas:[["입시전반","수능 당일 체크리스트와 멘탈 관리"],["학생부","예비고3, 겨울 전에 생기부를 복기해야 하는 이유"],["교과세특","올해 세특에서 내년 소재 찾기"],["탐구활동","수능 이후 탐구·독서로 채우는 연말"],["영어학습","예비고3 영어, 수능 기출 시작하는 법"],["수학학습","예비고3 수학, 겨울 전 진단이 먼저"],["학습전반","수능 이후 흐트러진 교실에서 루틴 지키기"]]},
+ 12:{ev:"기말고사 · 정시 원서 · 겨울방학 계획", ideas:[["입시전반","정시 지원 전략, 점수 말고 봐야 할 3가지"],["학생부","학년 마무리, 생기부 확인·정정 시기"],["교과세특","올해 세특 복기, 내년을 위한 기록"],["탐구활동","겨울방학 탐구 프로젝트 설계"],["영어학습","겨울 영어, 어휘·구문 리셋 4주"],["수학학습","수학 겨울방학, 다음 학기 예습 범위 정하기"],["학습전반","연말 계획, 목표 말고 시스템 만들기"]]}
+};
+var curSugMonth = (new Date()).getMonth()+1;
+function firstEmptyCellPos(){ for(var r=0;r<5;r++){ for(var c=0;c<6;c++){ if(!gridCell(r,c).text) return [r,c]; } } return null; }
+function vSuggestCard(){
+  var s = SEASON[curSugMonth] || {ev:"", ideas:[]};
+  var rows = s.ideas.map(function(it,i){
+    return '<div class="task"><span class="badge">'+esc(it[0])+'</span><label>'+esc(it[1])+'</label><button class="btn sm gray" onclick="App.useSeasonIdea('+i+')">빈 칸에 넣기</button></div>';
+  }).join("");
+  var chips = CATS7.map(function(c){ return '<button class="btn sm ghost" onclick="App.fillTopicChip(\''+c+'\')">'+c+'</button>'; }).join(" ");
+  var ai = state.suggest && state.suggest.items && state.suggest.items.length ?
+    state.suggest.items.map(function(it,i){
+      return '<div class="task"><span class="badge warn">'+esc(it.cat)+'</span><label>'+esc(it.text)+'</label><button class="btn sm gray" onclick="App.useAiIdea('+i+')">빈 칸에 넣기</button></div>';
+    }).join("") : '<div class="hint">아직 받은 아이디어가 없습니다.</div>';
+  var noKey = !state.settings.apiKey;
+  return '<div class="card"><h2 style="margin-top:0">🎯 시기별 추천 아이디어</h2>'+
+    '<div class="row" style="margin-bottom:8px"><button class="btn sm gray" onclick="App.sugMonth(-1)">←</button><b>'+curSugMonth+'월</b><button class="btn sm gray" onclick="App.sugMonth(1)">→</button>'+
+    '<span class="hint">'+esc(s.ev)+'</span></div>'+rows+
+    '<div style="margin-top:12px" class="hint">주제 칸 빠르게 채우기 (누르면 빈 주제 칸에 들어갑니다)</div>'+
+    '<div class="row" style="margin-top:6px">'+chips+'</div>'+
+    '<h2>🔍 웹검색 최신 아이디어 (AI)</h2>'+
+    '<div class="row" style="margin-bottom:8px"><button class="btn" onclick="App.fetchIdeas()" '+(noKey?"disabled":"")+'>최신 입시 이슈로 아이디어 받기</button>'+
+    '<span class="hint" id="sugStatus">'+(noKey? "설정에서 API 키를 입력하면 사용할 수 있어요." : (state.suggest && state.suggest.at ? "마지막 검색: "+state.suggest.at : ""))+'</span></div>'+ai+
+    '<div class="hint" style="margin-top:8px">웹검색은 Claude가 실시간으로 최근 뉴스·정책을 찾아 반영합니다(일반 질문보다 요금이 조금 더 듭니다). 시기별 추천은 일반적인 학사 일정 기준이므로 올해 실제 날짜는 확인 후 사용하세요.</div></div>';
+}
+function fetchIdeas(){
+  if(!state.settings.apiKey) return;
+  var el = document.getElementById("sugStatus"); if(el) el.textContent = "웹검색 중… 최대 30초 정도 걸립니다.";
+  var prompt = "오늘은 "+todayStr()+"이다. 한국 중·고등 학부모와 학생 대상 교육 콘텐츠 아이디어가 필요하다. 웹검색으로 최근 입시 뉴스, 정책 변화, 이 시기 학사 이슈를 확인한 뒤, 다음 7개 분야에서 총 10~14개의 콘텐츠 아이디어를 제안하라: "+CATS7.join(", ")+". 각 아이디어는 사람들이 멈춰보게 만드는 구체적인 한 줄 관점으로 쓴다. 출력 형식: 한 줄에 하나씩 '분야|아이디어' 형태로만 쓰고 다른 설명은 하지 마라.";
+  fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{ "content-type":"application/json","x-api-key":state.settings.apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true" },
+    body: JSON.stringify({ model: state.settings.model, max_tokens: 1500, tools:[{type:"web_search_20250305", name:"web_search", max_uses:3}], messages:[{role:"user", content: prompt}] })
+  }).then(function(res){return res.json();}).then(function(data){
+    if(data && data.content){
+      var txt = data.content.filter(function(c){return c.type==="text";}).map(function(c){return c.text||"";}).join("\n");
+      var items = [];
+      txt.split("\n").forEach(function(ln){ var p=ln.split("|"); if(p.length>=2){ var cat=p[0].replace(/^[\s\-\*\d\.\)]+/,"").trim(); var tx=p.slice(1).join("|").trim(); if(cat && tx && cat.length<=12) items.push({cat:cat, text:tx}); } });
+      if(items.length){ state.suggest={items:items, at:todayStr()}; save(); render(); }
+      else { var e1=document.getElementById("sugStatus"); if(e1) e1.textContent="⚠️ 응답을 이해하지 못했습니다. 다시 시도해주세요."; }
+    } else if(data && data.error){ var e2=document.getElementById("sugStatus"); if(e2) e2.textContent="⚠️ "+(data.error.message||"오류"); }
+  }).catch(function(e){ var e3=document.getElementById("sugStatus"); if(e3) e3.textContent="⚠️ 연결 실패: "+e.message; });
+}
+function fillColumnAI(c){
+  if(!state.settings.apiKey){ alert("설정에서 API 키를 먼저 입력해주세요."); return; }
+  var tp = state.grid.topics[c];
+  if(!tp){ alert("먼저 이 열의 주제 칸을 채워주세요."); return; }
+  var el = document.getElementById("sugStatus"); if(el) el.textContent = '"'+tp+'" 주제를 5개 포맷으로 바꾸는 중…';
+  var fmts = state.grid.formats.map(function(f,i){ return (i+1)+". "+(f||("포맷"+(i+1))); }).join("\n");
+  var prompt = "너는 한국 중·고등 학부모와 학생 대상 교육 콘텐츠 기획자다. 큰 주제: \""+tp+"\". 아래 5개 포맷 각각에 맞게, 이 주제를 사람들이 멈춰보게 만드는 구체적인 한 줄 콘텐츠 관점으로 바꿔라.\n"+fmts+"\n출력 형식: 정확히 5줄, 위 포맷 순서대로, 각 줄은 '포맷이름|한 줄 관점'. 다른 설명 금지.";
+  fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{ "content-type":"application/json","x-api-key":state.settings.apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true" },
+    body: JSON.stringify({ model: state.settings.model, max_tokens: 800, messages:[{role:"user", content: prompt}] })
+  }).then(function(res){return res.json();}).then(function(data){
+    if(data && data.content){
+      var txt = data.content.filter(function(x){return x.type==="text";}).map(function(x){return x.text||"";}).join("\n");
+      var arr = [];
+      txt.split("\n").forEach(function(ln){ var p=ln.split("|"); if(p.length>=2){ var tx=p.slice(1).join("|").trim(); if(tx) arr.push(tx); } });
+      if(!arr.length){ var e0=document.getElementById("sugStatus"); if(e0) e0.textContent="⚠️ 응답을 이해하지 못했습니다. 다시 시도해주세요."; return; }
+      var n=0, skip=0;
+      for(var r=0;r<5 && r<arr.length;r++){
+        var cell = gridCell(r,c);
+        if(cell.text){ skip++; } else { cell.text = arr[r]; n++; }
+      }
+      save(); render();
+      var e1=document.getElementById("sugStatus"); if(e1) e1.textContent='"'+tp+'" 열에 '+n+'칸 채움'+(skip? " (이미 적힌 "+skip+"칸은 그대로 둠)":"");
+    } else if(data && data.error){ var e2=document.getElementById("sugStatus"); if(e2) e2.textContent="⚠️ "+(data.error.message||"오류"); }
+  }).catch(function(e){ var e4=document.getElementById("sugStatus"); if(e4) e4.textContent="⚠️ 연결 실패: "+e.message; });
+}
+function vGrid(){
+  var g = state.grid;
+  var filled = 0;
+  for(var r0=0;r0<5;r0++){ for(var c0=0;c0<6;c0++){ if(gridCell(r0,c0).text) filled++; } }
+  var dl = '<datalist id="fmtlist">'+FMT_LIST.map(function(f){return '<option value="'+f+'">';}).join("")+'</datalist>';
+  var thead = '<tr><th style="width:92px">포맷 ＼ 주제</th>'+g.topics.map(function(tp,i){
+    var aib = (tp && state.settings.apiKey) ? '<button class="mini" onclick="App.fillColumnAI('+i+')">✨ AI로 5칸 채우기</button>' : "";
+    return '<th><div class="cellwrap"><input value="'+esc(tp)+'" placeholder="주제 '+(i+1)+'" onchange="App.setGridTopic('+i+',this.value)">'+aib+'</div></th>';
+  }).join("")+'</tr>';
+  var body = g.formats.map(function(fm,r){
+    var tds = g.topics.map(function(tp,c){
+      var cc = gridCell(r,c);
+      var extra = cc.text ? (cc.sent ? '<span class="sent">✓ 캘린더에 담김</span>' : '<button class="mini" onclick="App.sendGridCell('+r+','+c+')">📅 캘린더로 보내기</button>') : "";
+      return '<td><div class="cellwrap"><input value="'+esc(cc.text)+'" placeholder="'+((r*6+c)+1)+'" onchange="App.setGridCell('+r+','+c+',this.value)">'+extra+'</div></td>';
+    }).join("");
+    return '<tr><td class="fmt"><input list="fmtlist" value="'+esc(fm)+'" placeholder="포맷 '+(r+1)+'" onchange="App.setGridFormat('+r+',this.value)"></td>'+tds+'</tr>';
+  }).join("");
+  return '<h1>콘텐츠 기획 (6×5)</h1><div class="sub">주제 6개 × 포맷 5개만 정하면 한 달치 콘텐츠 30개가 나옵니다. 칸 하나가 콘텐츠 1개입니다.</div>'+
+  vSuggestCard()+
+  '<div class="card"><div class="row" style="margin-bottom:10px"><span class="badge">채운 칸 '+filled+' / 30</span>'+
+    '<span class="hint" style="flex:1">각 칸에는 "사람들이 멈춰보게 만드는 한 줄 관점"을 적습니다.</span></div>'+
+  dl+'<div style="overflow-x:auto"><table class="g65">'+thead+body+'</table></div>'+
+  '<div class="hint" style="margin-top:10px">'+
+  '· <b>1단계</b> 내가 잘 아는 분야에서 세부 주제 6개를 위쪽 칸에 적으세요.<br>'+
+  '· <b>2단계</b> 왼쪽 포맷 5개는 기본값(핵심형·비교형·토크형·설명형·리스트형)을 그대로 쓰거나, 칸을 클릭하면 나오는 목록(짧은 영상 포맷 20종 포함)에서 골라도 됩니다.<br>'+
+  '· <b>3단계</b> 칸을 채운 뒤 "캘린더로 보내기"를 누르면 콘텐츠 캘린더에 등록됩니다. 캘린더에서 날짜·사업·채널을 정하세요.</div></div>';
+}
+
+/* ===== 액션 ===== */
+var App = {
+  go: go,
+  setBiz: function(bid,k,v){ state.biz[bid][k]=v; save(); },
+  setOrda: function(k,v){ ordaWeek()[k]=v; save(); },
+  ordaBackupDone: function(){ state.orda.lastBackup=todayStr(); save(); render(); },
+  toggleTask: function(bid,id){ var x=state.biz[bid].tasks.find(function(a){return a.id===id;}); if(x){x.done=!x.done; save(); render();} },
+  delTask: function(bid,id){ state.biz[bid].tasks=state.biz[bid].tasks.filter(function(a){return a.id!==id;}); save(); render(); },
+  addTask: function(bid){ var el=document.getElementById("newTask"); var v=el.value.trim(); if(!v)return; state.biz[bid].tasks.push(t(v)); save(); render(); },
+  week: function(n){ curWeek=shiftWeek(curWeek,n); render(); },
+  weekNow: function(){ curWeek=mondayOf(); render(); },
+  setMetric: function(bid,k,v){ var m=getMetric(curWeek,bid); m[k]= k==="note"? v : (+v||0); save(); },
+  addPipe: function(){ state.pipeline.push({id:uid(),name:"",biz:"academy",stage:"문의",note:"",date:todayStr()}); save(); render(); },
+  setPipe: function(id,k,v){ var p=state.pipeline.find(function(a){return a.id===id;}); if(p){p[k]=v; save(); if(k==="stage")render();} },
+  delPipe: function(id){ state.pipeline=state.pipeline.filter(function(a){return a.id!==id;}); save(); render(); },
+  addCal: function(){ state.contents.push({id:uid(),date:todayStr(),biz:"evayon",channel:CH[0],title:"",status:"예정"}); save(); render(); },
+  setCal: function(id,k,v){ var c=state.contents.find(function(a){return a.id===id;}); if(c){c[k]=v; save(); if(k==="status"||k==="date")render();} },
+  delCal: function(id){ state.contents=state.contents.filter(function(a){return a.id!==id;}); save(); render(); },
+  month: function(n){ var d=new Date(curMonth+"-01T00:00:00"); d.setMonth(d.getMonth()+n); curMonth=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); render(); },
+  addCash: function(){ state.cash.push({id:uid(),month:curMonth,biz:"common",type:"수입",item:"",amount:0}); save(); render(); },
+  setCash: function(id,k,v){ var c=state.cash.find(function(a){return a.id===id;}); if(c){c[k]= k==="amount"? (+v||0):v; save(); if(k==="amount"||k==="type")render();} },
+  delCash: function(id){ state.cash=state.cash.filter(function(a){return a.id!==id;}); save(); render(); },
+  doneRoutine: function(id){ var x=state.routines.find(function(a){return a.id===id;}); if(x){x.lastDone=todayStr(); save(); render();} },
+  delRoutine: function(id){ if(!confirm("이 루틴을 삭제할까요?"))return; state.routines=state.routines.filter(function(a){return a.id!==id;}); save(); render(); },
+  addRoutine: function(){ var tx=document.getElementById("newRoutineText").value.trim(); var cy=document.getElementById("newRoutineCycle").value; if(!tx)return; state.routines.push(r(tx,cy)); save(); render(); },
+  addSchedBlk: function(){ state.schedule.blocks.push({id:uid(), day:0, label:"", start:"09:00", end:"10:00", cat:"common"}); save(); render(); },
+  setSchedBlk: function(id,k,v){ var b=state.schedule.blocks.find(function(a){return a.id===id;}); if(b){ b[k]= k==="day"? (+v||0) : v; save(); render(); } },
+  delSchedBlk: function(id){ state.schedule.blocks=state.schedule.blocks.filter(function(a){return a.id!==id;}); save(); render(); },
+  copySchedBlk: function(id){ var b=state.schedule.blocks.find(function(a){return a.id===id;}); if(b){ var n=JSON.parse(JSON.stringify(b)); n.id=uid(); n.day=(+b.day+1)%7; state.schedule.blocks.push(n); save(); render(); } },
+  setSchedOpt: function(k,v){ state.schedule[k]=+v; if(state.schedule.endHour<=state.schedule.startHour) state.schedule.endHour=state.schedule.startHour+1; save(); render(); },
+  setGridTopic: function(i,v){ state.grid.topics[+i]=v; save(); render(); },
+  setGridFormat: function(i,v){ state.grid.formats[+i]=v; save(); },
+  setGridCell: function(r,c,v){ var cc=gridCell(r,c); cc.text=v; save(); render(); },
+  sendGridCell: function(r,c){ var cc=gridCell(r,c); if(!cc.text) return; var tp=state.grid.topics[c]||("주제"+(c+1)); var fm=state.grid.formats[r]||("포맷"+(r+1)); state.contents.push({id:uid(), date:"", biz:"evayon", channel:CH[0], title:"["+tp+"·"+fm+"] "+cc.text, status:"예정"}); cc.sent=true; save(); render(); },
+  sugMonth: function(n){ curSugMonth = ((curSugMonth-1+n)%12+12)%12+1; render(); },
+  fillTopicChip: function(name){ var i=state.grid.topics.findIndex(function(x){return !x;}); if(i<0){ alert("주제 칸이 모두 찼습니다. 비우고 다시 시도하세요."); return; } state.grid.topics[i]=name; save(); render(); },
+  useSeasonIdea: function(i){ var s=SEASON[curSugMonth]; if(!s) return; var it=s.ideas[i]; if(!it) return; var p=firstEmptyCellPos(); if(!p){ alert("빈 칸이 없습니다."); return; } gridCell(p[0],p[1]).text=it[1]; save(); render(); },
+  useAiIdea: function(i){ var it=state.suggest.items[i]; if(!it) return; var p=firstEmptyCellPos(); if(!p){ alert("빈 칸이 없습니다."); return; } gridCell(p[0],p[1]).text=it.text; save(); render(); },
+  fetchIdeas: fetchIdeas,
+  fillColumnAI: fillColumnAI,
+  ask: ask,
+  clearChat: function(){ if(!confirm("대화 기록을 지울까요?"))return; state.chat=[]; save(); render(); },
+  setSetting: function(k,v){ state.settings[k]=v.trim? v.trim():v; save(); render(); },
+  exportJSON: function(){
+    state.lastExport = todayStr(); save();
+    var blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "에듀케레대시보드_백업_"+todayStr().replace(/-/g,"")+".json";
+    a.click(); render();
+  },
+  importJSON: function(input){
+    var f = input.files[0]; if(!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try{ var s=JSON.parse(rd.result); if(!s.biz||!s.routines) throw new Error("형식 오류");
+        if(confirm("현재 데이터를 백업 파일 내용으로 바꿀까요?")){ state=s; save(); render(); alert("복원 완료"); }
+      }catch(e){ alert("올바른 백업 파일이 아닙니다."); }
+    };
+    rd.readAsText(f);
+  },
+  copyMD: function(){
+    var wk = mondayOf();
+    var md = ["# 주간 사업 요약 ("+weekLabel(wk)+")","", "생성: "+todayStr()+" · 에듀케레 대시보드",""];
+    BIZ.forEach(function(b){
+      var d=state.biz[b.id]; var m=getMetric(wk,b.id);
+      var open=d.tasks.filter(function(x){return !x.done;});
+      md.push("## "+b.name);
+      md.push("- 상태: "+d.status);
+      md.push("- 이번 주 실적: 문의 "+m.inq+" / 상담 "+m.con+" / 결제 "+m.pay+" / 매출 "+fmt(m.rev)+"원");
+      if(open.length){ md.push("- 남은 할 일:"); open.forEach(function(x){ md.push("  - [ ] "+x.text); }); }
+      if(d.memo) md.push("- 메모: "+d.memo);
+      md.push("");
+    });
+    var due = state.routines.filter(routineDue);
+    if(due.length){ md.push("## 밀린 운영 루틴"); due.forEach(function(x){ md.push("- [ ] "+x.text+" ("+x.cycle+")"); }); }
+    var text = md.join("\n");
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ alert("복사 완료! 옵시디언 새 노트에 붙여넣으세요."); },function(){ prompt("아래 내용을 복사하세요", text); });
+    } else { prompt("아래 내용을 복사하세요", text); }
+  },
+  reset: function(){ if(!confirm("정말 초기화할까요? 되돌릴 수 없습니다."))return; state=seed(); save(); render(); }
+};
+
+/* ===== 렌더 ===== */
+function render(){
+  renderNav();
+  var v = document.getElementById("view");
+  if(route==="home") v.innerHTML = vHome();
+  else if(route.indexOf("biz:")===0) v.innerHTML = vBiz(route.slice(4));
+  else if(route==="metrics") v.innerHTML = vMetrics();
+  else if(route==="pipe") v.innerHTML = vPipe();
+  else if(route==="cal") v.innerHTML = vCal();
+  else if(route==="cash") v.innerHTML = vCash();
+  else if(route==="routine") v.innerHTML = vRoutine();
+  else if(route==="sched") v.innerHTML = vSched();
+  else if(route==="grid") v.innerHTML = vGrid();
+  else if(route==="ai") v.innerHTML = vAI();
+  else if(route==="set") v.innerHTML = vSet();
+  var box=document.getElementById("chatBox"); if(box) box.scrollTop=box.scrollHeight;
+}
+render();
+</script>
+</body>
+</html>

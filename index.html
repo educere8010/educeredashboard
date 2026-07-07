@@ -284,6 +284,7 @@ function vBiz(bid){
     '<div class="row" style="margin-top:10px"><input id="newTask" placeholder="새 할 일 입력 후 추가" style="flex:1" onkeydown="if(event.key===\'Enter\')App.addTask(\''+bid+'\')">'+
     '<button class="btn sm" onclick="App.addTask(\''+bid+'\')">추가</button></div>'+
   '</div></div>'+
+  ((bid==="academy")? vAcademyLinks() : "")+
   ((bid==="academy"||bid==="gwan")? vOrdaCard(bid) : "")+
   ((bid==="evayon")? vEvayonLinks() : "")+
   ((bid==="studia")? vStudiaLinks() : "")+
@@ -309,6 +310,12 @@ function vOrdaCard(bid){
   '</div>'+
   '<div class="row"><span class="badge '+(bwarn?"bad":"ok")+'">오르다 백업: '+(state.orda.lastBackup? state.orda.lastBackup+" ("+bdays+"일 전)":"기록 없음")+'</span>'+
   '<button class="btn sm gray" onclick="App.ordaBackupDone()">오늘 백업함</button></div></div>';
+}
+
+function vAcademyLinks(){
+  return '<div class="card" style="border-left:4px solid #4c6ef5"><h2 style="margin-top:0">🗓 학원 시간표</h2><div class="row">'+
+  '<a class="btn" href="timetable.html" target="_blank" style="text-decoration:none;display:inline-block">🗓 시간표 편집기 열기</a>'+
+  '</div><div class="hint" style="margin-top:8px">주간 시간표를 드래그로 편집하고 충돌(교실·학생·도착시간)을 자동 검사합니다. 변경사항은 브라우저에 자동 저장되며, 다른 기기로 옮기려면 편집기 안의 "파일로 저장"을 쓰세요.</div></div>';
 }
 
 function vEvayonLinks(){

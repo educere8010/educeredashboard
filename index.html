@@ -203,6 +203,7 @@ var NAV = [
   ["routine","✅ 운영 루틴"],
   ["_sec","도구"],
   ["ai","🤖 AI 어시스턴트"],
+  ["auto","🔁 자동 예약 작업"],
   ["set","⚙️ 설정·백업"]
 ];
 function renderNav(){
@@ -814,6 +815,58 @@ var App = {
   reset: function(){ if(!confirm("정말 초기화할까요? 되돌릴 수 없습니다."))return; state=seed(); save(); render(); }
 };
 /* ===== 렌더 ===== */
+/* ===== 화면: 자동 예약 작업 (Claude) ===== */
+var AUTO_TASKS = [
+  { icon:"📰", name:"입시·교육 뉴스 아침 브리핑", color:"#3b5bdb",
+    when:"평일(월~금) 오전 7시", cad:"weekday", hour:7,
+    desc:"그날의 대입 정책·제도, 수능·모의고사, 대학별 모집 요강, 교육 트렌드 뉴스를 조사해 핵심 요약과 출처 링크로 정리합니다.",
+    out:"한국어 요약 브리핑(.md)" },
+  { icon:"✍️", name:"입시뉴스 → 블로그·SNS 콘텐츠 초안", color:"#12b886",
+    when:"평일(월~금) 오전 8시", cad:"weekday", hour:8,
+    desc:"뉴스 중 관심도 높은 주제 1개를 골라 블로그 글 초안(제목 후보 3개·본문·해시태그)과 SNS 카드뉴스 문구를 자동 작성합니다.",
+    out:"블로그+SNS 초안(.md)" },
+  { icon:"🗓", name:"월별 입시 일정 리마인더", color:"#f76707",
+    when:"매월 1일 오전 9시", cad:"monthly", day:1, hour:9,
+    desc:"그달의 수시·정시 원서접수, 수능·모의고사, 대학별고사, 합격자 발표 등 주요 입시 일정을 날짜순으로 정리합니다.",
+    out:"이번 달 일정 목록(.md)" }
+];
+function autoFmtNext(dt){
+  var wd=["일","월","화","수","목","금","토"];
+  return (dt.getMonth()+1)+"월 "+dt.getDate()+"일("+wd[dt.getDay()]+") "+String(dt.getHours()).padStart(2,"0")+":00";
+}
+function autoNextRun(a){
+  try{
+    var now = new Date();
+    if(a.cad==="weekday"){
+      for(var i=0;i<15;i++){
+        var c = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i, a.hour, 0, 0, 0);
+        var dow = c.getDay();
+        if(dow>=1 && dow<=5 && c>now) return autoFmtNext(c);
+      }
+    } else if(a.cad==="monthly"){
+      var m = new Date(now.getFullYear(), now.getMonth(), a.day, a.hour, 0, 0, 0);
+      if(m<=now) m = new Date(now.getFullYear(), now.getMonth()+1, a.day, a.hour, 0, 0, 0);
+      return autoFmtNext(m);
+    }
+  }catch(e){}
+  return a.when;
+}
+function vAuto(){
+  var cards = AUTO_TASKS.map(function(a){
+    return '<div class="card bizcard" style="--bc:'+a.color+'">'+
+      '<h3>'+a.icon+' '+esc(a.name)+'</h3>'+
+      '<div class="row" style="margin:4px 0 10px">'+
+        '<span class="badge">⏰ '+esc(a.when)+'</span>'+
+        '<span class="badge ok">다음 실행 '+esc(autoNextRun(a))+'</span></div>'+
+      '<div style="font-size:13.5px;line-height:1.6">'+esc(a.desc)+'</div>'+
+      '<div class="kv" style="margin-top:10px"><b>결과물</b>'+esc(a.out)+' · 완료되면 휴대폰 알림</div>'+
+    '</div>';
+  }).join("");
+  return '<h1>🔁 자동 예약 작업 (Claude)</h1>'+
+    '<div class="sub">Claude가 정해진 시간에 스스로 실행해 결과물을 보내주는 작업입니다. 이 화면은 현황을 보여주는 용도예요.</div>'+
+    '<div class="alert">이 작업들은 Claude 클라우드에서 자동 실행됩니다. 시간·내용을 바꾸거나 멈추려면 Claude에게 말씀해 주세요. (예: "블로그 초안 작업을 오전 9시로 바꿔줘")</div>'+
+    '<div class="grid2">'+cards+'</div>';
+}
 function render(){
   renderNav();
   var v = document.getElementById("view");
@@ -827,6 +880,7 @@ function render(){
   else if(route==="sched") v.innerHTML = vSched();
   else if(route==="grid") v.innerHTML = vGrid();
   else if(route==="ai") v.innerHTML = vAI();
+  else if(route==="auto") v.innerHTML = vAuto();
   else if(route==="set") v.innerHTML = vSet();
   var box=document.getElementById("chatBox"); if(box) box.scrollTop=box.scrollHeight;
 }

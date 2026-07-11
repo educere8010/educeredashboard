@@ -117,7 +117,6 @@ var METRIC_DEFS = [
   {k:"pay", label:"등록·결제"},
   {k:"rev", label:"매출(원)"}
 ];
-
 function seed(){
   return {
     version:1, lastExport:null,
@@ -155,7 +154,6 @@ function seed(){
 function t(x){ return {id:uid(), text:x, done:false}; }
 function r(x,c){ return {id:uid(), text:x, cycle:c, lastDone:null}; }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-
 /* ===== 상태 ===== */
 var state;
 try{ state = JSON.parse(localStorage.getItem(LS_KEY)) || seed(); }catch(e){ state = seed(); }
@@ -166,7 +164,6 @@ if(!state.orda) state.orda = {weeks:{}, lastBackup:null};
 if(!state.biz.hanglow) state.biz.hanglow = { status:"외국인 대상 한국어 학습 앱 개발 중 (개인 프로젝트)", problem:"미출시 — 웹앱·학습 콘텐츠(발음·문법·회화·K컬처)와 백엔드 준비는 진행, 출시 단계 미완", direction:"작게라도 출시 가능한 1차 버전(웹 우선 여부) 정의 후 배포", tasks:[t("현재 개발 단계 기록 (백엔드 Phase 어디까지 완료?)"),t("배포 주소(도메인/GitHub Pages) 확정해 대시보드에 연결"),t("1차 출시 범위 정하기 (웹 먼저 vs 앱스토어)")], memo:"" };
 if(!state.routines.some(function(x){return x.text.indexOf("오르다 주간 점검")>=0;})) state.routines.push(r("오르다 주간 점검 수치 입력 (납부·미션·피드백)","매주"));
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
-
 /* ===== 유틸 ===== */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function fmt(n){ n=Number(n)||0; return n.toLocaleString("ko-KR"); }
@@ -183,13 +180,11 @@ function weekLabel(wk){ var d=new Date(wk+"T00:00:00"); var e=new Date(d); e.set
 function daysSince(dstr){ if(!dstr) return 9999; return Math.floor((new Date(todayStr())-new Date(dstr))/86400000); }
 function bizName(id){ var b=BIZ.find(function(x){return x.id===id;}); return b? b.short : id; }
 function getMetric(wk,bid){ if(!state.metrics[wk]) state.metrics[wk]={}; if(!state.metrics[wk][bid]) state.metrics[wk][bid]={inq:0,con:0,pay:0,rev:0,note:""}; return state.metrics[wk][bid]; }
-
 /* ===== 라우팅 ===== */
 var route = "home";
 var curWeek = mondayOf();
 var curMonth = monthStr();
 function go(rt){ route = rt; render(); }
-
 var NAV = [
   ["home","🏠 통합 홈"],
   ["_sec","사업별"],
@@ -218,7 +213,6 @@ function renderNav(){
   });
   document.getElementById("nav").innerHTML = h;
 }
-
 /* ===== 화면: 통합 홈 ===== */
 function vHome(){
   var wk = mondayOf();
@@ -230,17 +224,14 @@ function vHome(){
   var wm = state.metrics[wk];
   if(!wm) alerts.push('<div class="alert">📊 이번 주 실적이 아직 비어 있어요. 일주일에 한 번만 입력하면 됩니다. <button class="btn sm ghost" onclick="App.go(\'metrics\')">입력하기</button></div>');
   if(daysSince(state.lastExport) > 7) alerts.push('<div class="alert red">💾 마지막 백업 후 '+(state.lastExport? daysSince(state.lastExport)+"일":"기록 없음")+' — 설정에서 JSON 백업을 내려받아 두세요. <button class="btn sm ghost" onclick="App.go(\'set\')">백업하기</button></div>');
-
   var dow = (new Date().getDay()+6)%7;
   var tb = (state.schedule && state.schedule.blocks ? state.schedule.blocks : []).filter(function(b){return +b.day===dow;}).sort(function(a,b){return toMin(a.start)-toMin(b.start);});
   var todayCard = tb.length ? '<div class="card"><h2 style="margin-top:0">오늘 일정 ('+DAYN[dow]+'요일)</h2>'+tb.map(function(b){
       var c = schedCat(b.cat);
       return '<div class="task"><span class="badge" style="background:'+c.color+';color:#fff">'+esc(c.short)+'</span><label>'+esc(b.start)+'–'+esc(b.end)+' '+esc(b.label)+'</label></div>';
     }).join("")+'<div style="margin-top:8px"><button class="btn sm ghost" onclick="App.go(\'sched\')">주간 일정표 →</button></div></div>' : "";
-
   var tot = {inq:0,con:0,pay:0,rev:0};
   BIZ.forEach(function(b){ var m=getMetric(wk,b.id); tot.inq+=+m.inq||0; tot.con+=+m.con||0; tot.pay+=+m.pay||0; tot.rev+=+m.rev||0; });
-
   var cards = BIZ.map(function(b){
     var d = state.biz[b.id];
     var open = d.tasks.filter(function(x){return !x.done;});
@@ -254,7 +245,6 @@ function vHome(){
       '<div style="margin-top:10px"><button class="btn sm ghost" onclick="App.go(\'biz:'+b.id+'\')">할 일 '+open.length+'개 관리 →</button></div>'+
     '</div>';
   }).join("");
-
   return '<h1>통합 홈</h1><div class="sub">'+todayStr()+' · 이번 주 '+weekLabel(wk)+'</div>'+
     alerts.join("")+ todayCard +
     '<div class="card"><h2 style="margin-top:0">이번 주 전체 지표</h2><div class="grid4">'+
@@ -263,7 +253,6 @@ function vHome(){
     '<h2>사업별 현황</h2><div class="grid2">'+cards+'</div>';
 }
 function kpi(label,val){ return '<div><b style="font-size:12px;color:var(--sub)">'+label+'</b><div class="big">'+val+'</div></div>'; }
-
 /* ===== 화면: 사업별 ===== */
 function vBiz(bid){
   var b = BIZ.find(function(x){return x.id===bid;});
@@ -285,13 +274,13 @@ function vBiz(bid){
     '<button class="btn sm" onclick="App.addTask(\''+bid+'\')">추가</button></div>'+
   '</div></div>'+
   ((bid==="academy")? vAcademyLinks() : "")+
+  ((bid==="gwan")? vGwanLinks() : "")+
   ((bid==="academy"||bid==="gwan")? vOrdaCard(bid) : "")+
   ((bid==="evayon")? vEvayonLinks() : "")+
   ((bid==="studia")? vStudiaLinks() : "")+
   '<div class="card"><h2 style="margin-top:0">메모 (상담에서 나온 질문, 아이디어, 사례)</h2>'+
     '<textarea style="min-height:110px" onchange="App.setBiz(\''+bid+'\',\'memo\',this.value)" placeholder="여기에 적은 내용은 나중에 옵시디언으로 옮겨 자산이 됩니다.">'+esc(d.memo)+'</textarea></div>';
 }
-
 /* ===== 오르다 주간 점검 ===== */
 function ordaWeek(){ var wk=mondayOf(); if(!state.orda.weeks[wk]) state.orda.weeks[wk]={pay:"",unpaid:"",mission:"",nofb:"",low:"",gwanCnt:"",note:""}; return state.orda.weeks[wk]; }
 function vOrdaCard(bid){
@@ -311,20 +300,22 @@ function vOrdaCard(bid){
   '<div class="row"><span class="badge '+(bwarn?"bad":"ok")+'">오르다 백업: '+(state.orda.lastBackup? state.orda.lastBackup+" ("+bdays+"일 전)":"기록 없음")+'</span>'+
   '<button class="btn sm gray" onclick="App.ordaBackupDone()">오늘 백업함</button></div></div>';
 }
-
 function vAcademyLinks(){
   return '<div class="card" style="border-left:4px solid #4c6ef5"><h2 style="margin-top:0">🗓 학원 시간표</h2><div class="row">'+
   '<a class="btn" href="timetable.html" target="_blank" style="text-decoration:none;display:inline-block">🗓 시간표 편집기 열기</a>'+
   '</div><div class="hint" style="margin-top:8px">주간 시간표를 드래그로 편집하고 충돌(교실·학생·도착시간)을 자동 검사합니다. 변경사항은 브라우저에 자동 저장되며, 다른 기기로 옮기려면 편집기 안의 "파일로 저장"을 쓰세요.</div></div>';
 }
-
+function vGwanLinks(){
+  return '<div class="card" style="border-left:4px solid #12b886"><h2 style="margin-top:0">🎓 학습관 도구</h2><div class="row">'+
+  '<a class="btn" href="https://educere8010.github.io/educereapply/" target="_blank" style="text-decoration:none;display:inline-block">🎓 입시상담앱 열기</a>'+
+  '</div><div class="hint" style="margin-top:8px">학생의 내신·모의·정시·생기부를 입력하면 수시·정시 지원 배치(안정·적정·상향)를 자동으로 계산해 주는 상담 도구입니다. 전국 전 계열 공식 입결(대교협) 내장 · 5등급제 환산 · AI 생기부 분석 지원.</div></div>';
+}
 function vEvayonLinks(){
   return '<div class="card" style="border-left:4px solid #f76707"><h2 style="margin-top:0">🔗 에바연 바로가기</h2><div class="row">'+
   '<a class="btn" href="https://www.educereedu.com" target="_blank" style="text-decoration:none;display:inline-block">🌐 메인 홈페이지 열기</a>'+
   '<a class="btn ghost" href="https://imweb.me" target="_blank" style="text-decoration:none;display:inline-block">⚙️ 아임웹 관리자 로그인</a>'+
   '</div><div class="hint" style="margin-top:8px">관리자는 imweb.me 로그인 후 "사이트 관리"에서 educereedu.com을 선택해 들어갑니다.</div></div>';
 }
-
 function vStudiaLinks(){
   return '<div class="card" style="border-left:4px solid #7048e8"><h2 style="margin-top:0">🔗 스터디아 바로가기</h2><div class="row">'+
   '<a class="btn" href="https://studia.co.kr" target="_blank" style="text-decoration:none;display:inline-block">🌐 스터디아 열기</a>'+
@@ -332,7 +323,6 @@ function vStudiaLinks(){
   '<a class="btn ghost" href="https://supabase.com/dashboard" target="_blank" style="text-decoration:none;display:inline-block">🗄️ Supabase 대시보드</a>'+
   '</div><div class="hint" style="margin-top:8px">관리자 페이지는 관리자 이메일로 로그인해야 열립니다. 주소는 외부에 공유하지 마세요. Supabase는 DB·결제 함수 관리용입니다.</div></div>';
 }
-
 /* ===== 화면: 주간 실적 ===== */
 function vMetrics(){
   var rows = BIZ.map(function(b){
@@ -343,7 +333,6 @@ function vMetrics(){
     return '<tr><td><b>'+esc(b.short)+'</b></td>'+cells+
       '<td><input value="'+esc(m.note)+'" placeholder="메모" onchange="App.setMetric(\''+b.id+'\',\'note\',this.value)"></td></tr>';
   }).join("");
-
   var weeks = Object.keys(state.metrics).sort().slice(-6);
   var maxRev = 1;
   weeks.forEach(function(wk){ var s=0; BIZ.forEach(function(b){ var m=(state.metrics[wk]||{})[b.id]; if(m) s+=+m.rev||0; }); if(s>maxRev) maxRev=s; });
@@ -354,7 +343,6 @@ function vMetrics(){
     return '<tr><td>'+weekLabel(wk)+'</td><td class="num">'+fmt(s.inq)+'</td><td class="num">'+fmt(s.con)+'</td><td class="num">'+fmt(s.pay)+'</td><td class="num">'+fmt(s.rev)+'</td>'+
       '<td style="width:30%"><div class="barwrap"><div class="bar" style="width:'+w+'%"></div></div></td></tr>';
   }).join("") || '<tr><td colspan="6" class="hint">아직 기록이 없습니다.</td></tr>';
-
   return '<h1>주간 실적</h1><div class="sub">조회수가 아니라 행동 지표(문의·상담·결제)만 봅니다.</div>'+
   '<div class="card"><div class="row" style="margin-bottom:12px">'+
     '<button class="btn sm gray" onclick="App.week(-1)">← 지난주</button>'+
@@ -367,7 +355,6 @@ function vMetrics(){
   '<div class="card"><h2 style="margin-top:0">최근 흐름 (전체 합계)</h2>'+
   '<table><tr><th>주</th><th>문의</th><th>상담</th><th>결제</th><th>매출</th><th>매출 추이</th></tr>'+hist+'</table></div>';
 }
-
 /* ===== 화면: 파이프라인 ===== */
 function vPipe(){
   var counts = STAGES.map(function(s){
@@ -390,7 +377,6 @@ function vPipe(){
   '<table><tr><th>이름</th><th>사업</th><th>단계</th><th>메모</th><th>최근 접점</th><th></th></tr>'+rows+'</table>'+
   '<button class="btn sm" style="margin-top:10px" onclick="App.addPipe()">+ 고객 추가</button></div>';
 }
-
 /* ===== 화면: 콘텐츠 캘린더 ===== */
 function vCal(){
   var items = state.contents.slice().sort(function(a,b){ return (a.date||"9999") < (b.date||"9999") ? -1:1; });
@@ -411,7 +397,6 @@ function vCal(){
   '<div class="card"><table><tr><th>날짜</th><th>사업</th><th>채널</th><th>제목·주제</th><th>상태</th><th></th></tr>'+rows+'</table>'+
   '<button class="btn sm" style="margin-top:10px" onclick="App.addCal()">+ 콘텐츠 추가</button></div>';
 }
-
 /* ===== 화면: 현금흐름 ===== */
 function vCash(){
   var items = state.cash.filter(function(c){ return c.month===curMonth; });
@@ -437,7 +422,6 @@ function vCash(){
   '<table><tr><th>구분</th><th>사업</th><th>항목</th><th>금액(원)</th><th></th></tr>'+rows+'</table>'+
   '<button class="btn sm" style="margin-top:10px" onclick="App.addCash()">+ 기록 추가</button></div>';
 }
-
 /* ===== 화면: 운영 루틴 ===== */
 function routineDue(x){
   var limit = x.cycle==="매주"?7 : x.cycle==="매월"?31 : 92;
@@ -462,7 +446,6 @@ function vRoutine(){
     '<button class="btn sm" onclick="App.addRoutine()">추가</button></div>'+
   '<div class="hint" style="margin-top:10px">세금 일정은 일반 기준입니다. 사업자 유형(간이/일반, 법인 여부)에 따라 다르니 세무사에게 확인하세요.</div></div>';
 }
-
 /* ===== 화면: AI 어시스턴트 ===== */
 function vAI(){
   var msgs = state.chat.map(function(m){
@@ -554,7 +537,6 @@ function ask(){
   }).catch(function(e){ setAIStatus("⚠️ 연결 실패: 인터넷 연결과 API 키를 확인해주세요. ("+e.message+")"); });
 }
 function setAIStatus(s){ var el=document.getElementById("aiStatus"); if(el) el.textContent=s; var box=document.getElementById("chatBox"); if(box) box.scrollTop=box.scrollHeight; }
-
 /* ===== 화면: 설정 ===== */
 function vSet(){
   return '<h1>설정 · 백업</h1><div class="sub">데이터는 이 컴퓨터의 브라우저 안에만 저장됩니다. 정기 백업이 중요합니다.</div>'+
@@ -579,7 +561,6 @@ function vSet(){
   '<button class="btn sm gray" onclick="App.reset()">모든 데이터 초기화</button>'+
   '<div class="hint" style="margin-top:6px">처음 상태(볼트 기반 기본값)로 되돌립니다. 백업을 먼저 내려받으세요.</div></div>';
 }
-
 /* ===== 화면: 주간 일정표 ===== */
 function schedCats(){ return BIZ.concat([{id:"common", name:"공통·개인", short:"공통", color:"#868e96"}]); }
 function toMin(t){ var p=String(t||"0:0").split(":"); return (parseInt(p[0],10)||0)*60+(parseInt(p[1],10)||0); }
@@ -640,7 +621,6 @@ function vSched(){
     '<button class="btn sm" style="margin-top:10px" onclick="App.addSchedBlk()">+ 일정 추가</button>'+
     '<div class="hint" style="margin-top:8px">"복제"를 누르면 같은 일정이 다음 요일에 복사됩니다. 오늘 요일의 일정은 통합 홈에도 표시됩니다.</div></div>';
 }
-
 /* ===== 화면: 콘텐츠 기획 6x5 ===== */
 var FMT_LIST = ["핵심형","비교형","토크형","설명형","리스트형","혼합형","분할화면","판서 설명","1인 2역","실내 토크","얼굴 없는 애니","일상기록","거리 인터뷰 1인","거리 인터뷰 여러 명","1인 상황극","채팅형 대화","게임 해설","자료 화면 설명","편집 클립","실물 설명","반응 설명","반응형","노트 설명","대화 클립","차 안 대화"];
 function gridCell(r,c){ if(!state.grid.cells["r"+r+"c"+c]) state.grid.cells["r"+r+"c"+c]={text:"",sent:false}; return state.grid.cells["r"+r+"c"+c]; }
@@ -750,7 +730,6 @@ function vGrid(){
   '· <b>2단계</b> 왼쪽 포맷 5개는 기본값(핵심형·비교형·토크형·설명형·리스트형)을 그대로 쓰거나, 칸을 클릭하면 나오는 목록(짧은 영상 포맷 20종 포함)에서 골라도 됩니다.<br>'+
   '· <b>3단계</b> 칸을 채운 뒤 "캘린더로 보내기"를 누르면 콘텐츠 캘린더에 등록됩니다. 캘린더에서 날짜·사업·채널을 정하세요.</div></div>';
 }
-
 /* ===== 액션 ===== */
 var App = {
   go: go,
@@ -834,7 +813,6 @@ var App = {
   },
   reset: function(){ if(!confirm("정말 초기화할까요? 되돌릴 수 없습니다."))return; state=seed(); save(); render(); }
 };
-
 /* ===== 렌더 ===== */
 function render(){
   renderNav();

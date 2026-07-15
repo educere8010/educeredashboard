@@ -6,28 +6,37 @@
 <title>에듀케레 비즈니스 대시보드</title>
 <style>
 :root{
-  --bg:#f4f5f7; --card:#ffffff; --ink:#1f2430; --sub:#6b7280; --line:#e5e7eb;
-  --brand:#3b5bdb; --brand-soft:#edf2ff; --ok:#12b886; --warn:#f59f00; --bad:#e03131;
-  --r:14px;
+  --bg:#f5f3ee; --card:#ffffff; --ink:#18233a; --sub:#697386; --line:#e7e5df;
+  --brand:#244a73; --brand-deep:#142d4a; --brand-soft:#edf3f8; --accent:#d66a4a;
+  --ok:#27856a; --warn:#d7952c; --bad:#d34c4c; --shadow:0 10px 30px rgba(24,35,58,.07);
+  --r:18px;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
-body{font-family:"Malgun Gothic","맑은 고딕",Pretendard,-apple-system,sans-serif; background:var(--bg); color:var(--ink); font-size:15px;}
+body{font-family:Pretendard,"Malgun Gothic","맑은 고딕",-apple-system,sans-serif; background:var(--bg); color:var(--ink); font-size:15px;}
 #app{display:flex; min-height:100vh;}
-aside{width:220px; background:#1e2433; color:#cbd3e1; padding:20px 12px; flex-shrink:0;}
-aside .logo{font-size:17px; font-weight:800; color:#fff; padding:6px 10px 18px;}
-aside .logo small{display:block; font-weight:400; font-size:11px; color:#8b95a8; margin-top:4px;}
+aside{width:248px; background:linear-gradient(180deg,#142d4a 0%,#10243b 100%); color:#cfdae5; padding:22px 14px; flex-shrink:0; position:fixed; inset:0 auto 0 0; overflow-y:auto; z-index:30; box-shadow:8px 0 30px rgba(13,31,51,.12);}
+aside .logo{font-size:18px; font-weight:800; color:#fff; padding:7px 12px 22px; letter-spacing:-.3px;}
+aside .logo:before{content:"E";display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#e88769,#c95d40);margin-right:9px;font-family:Georgia,serif;font-size:18px;box-shadow:0 5px 14px rgba(214,106,74,.28)}
+aside .logo small{display:block; font-weight:400; font-size:11px; color:#91a6b9; margin:7px 0 0 40px;}
 aside button{display:block; width:100%; text-align:left; background:none; border:none; color:#cbd3e1; padding:10px 12px; border-radius:10px; font-size:14px; cursor:pointer; margin-bottom:2px; font-family:inherit;}
-aside button:hover{background:#2a3247;}
-aside button.on{background:var(--brand); color:#fff; font-weight:700;}
-aside .sec{font-size:11px; color:#7c8699; padding:14px 12px 6px; letter-spacing:1px;}
-main{flex:1; padding:24px 28px; max-width:1100px;}
-h1{font-size:21px; margin-bottom:4px;}
+aside button:hover{background:rgba(255,255,255,.08);}
+aside button.on{background:#fff; color:var(--brand-deep); font-weight:800; box-shadow:0 5px 16px rgba(0,0,0,.16);}
+aside .sec{font-size:10px; color:#7790a6; padding:18px 12px 7px; letter-spacing:1.4px; font-weight:800;}
+.shell{margin-left:248px; min-width:0; flex:1;}
+.topbar{height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-bottom:1px solid rgba(31,47,67,.08);background:rgba(245,243,238,.88);backdrop-filter:blur(14px);position:sticky;top:0;z-index:20}
+.topbar-left{display:flex;align-items:center;gap:11px}.topbar-title{font-size:13px;font-weight:800;color:var(--brand-deep)}
+.save-state{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub)}.save-state:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(39,133,106,.1)}
+.menu-toggle{display:none;border:0;background:#fff;color:var(--brand);width:38px;height:38px;border-radius:11px;font-size:20px;box-shadow:0 4px 16px rgba(24,35,58,.09);cursor:pointer}
+.nav-shade{display:none}
+main{padding:30px 32px 48px; max-width:1320px; margin:0 auto;}
+h1{font-size:26px; margin-bottom:6px; letter-spacing:-.8px; color:var(--brand-deep);}
 h2{font-size:16px; margin:18px 0 10px;}
 .sub{color:var(--sub); font-size:13px; margin-bottom:16px;}
-.card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; margin-bottom:14px;}
+.card{background:var(--card); border:1px solid rgba(31,47,67,.08); border-radius:var(--r); padding:19px 21px; margin-bottom:16px; box-shadow:var(--shadow);}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
 .grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
-.bizcard{border-top:4px solid var(--bc,#888);}
+.bizcard{border-top:0; position:relative; overflow:hidden;}
+.bizcard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--bc,#888)}
 .bizcard h3{font-size:15px; margin-bottom:6px;}
 .badge{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--brand-soft); color:var(--brand); font-weight:700;}
 .badge.ok{background:#e6fcf5; color:#0b7285;}
@@ -40,7 +49,7 @@ td input,td select{width:100%;}
 input,select,textarea{font-family:inherit; font-size:13.5px; padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);}
 input:focus,select:focus,textarea:focus{outline:2px solid #bac8ff; border-color:var(--brand);}
 textarea{width:100%; resize:vertical; min-height:64px; line-height:1.55;}
-button.btn{background:var(--brand); color:#fff; border:none; border-radius:9px; padding:8px 14px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;}
+button.btn{background:var(--brand); color:#fff; border:none; border-radius:10px; padding:9px 15px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; box-shadow:0 5px 14px rgba(36,74,115,.14);}
 button.btn:hover{filter:brightness(1.08);}
 button.btn.ghost{background:#fff; color:var(--brand); border:1px solid var(--brand);}
 button.btn.sm{padding:4px 10px; font-size:12px;}
@@ -55,7 +64,9 @@ button.del:hover{color:var(--bad);}
 .kv b{display:block; font-size:12px; color:var(--sub); margin-bottom:4px;}
 .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
 .num{font-variant-numeric:tabular-nums; text-align:right;}
-.big{font-size:22px; font-weight:800;}
+.big{font-size:24px; font-weight:850; letter-spacing:-.5px;}
+.kpi-card{padding:14px 15px;border-radius:14px;background:linear-gradient(145deg,#fff,#f7f9fb);border:1px solid #edf0f2;min-width:0}.kpi-card .kpi-label{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--sub);font-weight:700;margin-bottom:7px}.kpi-card .kpi-note{font-size:11px;color:var(--sub);margin-top:4px}.kpi-card.accent{background:linear-gradient(145deg,#fff8f5,#fff);border-color:#f4ded6}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.quick-item{padding:14px;border-radius:14px;background:#f7f8fa;border:1px solid #edf0f2}.quick-item b{display:block;font-size:20px;margin-top:5px;color:var(--brand-deep)}
 .bar{height:8px; background:var(--brand); border-radius:4px; min-width:2px;}
 .barwrap{background:#eef0f4; border-radius:4px; width:100%;}
 .alert{background:#fff9db; border:1px solid #ffe08a; border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:13.5px;}
@@ -83,18 +94,31 @@ button.del:hover{color:var(--bad);}
 .g65 .mini{font-size:10.5px; color:var(--brand); background:none; border:none; cursor:pointer; text-align:left; padding:0; font-family:inherit;}
 .g65 .sent{font-size:10.5px; color:var(--ok);}
 @media(max-width:840px){
-  #app{flex-direction:column;}
-  aside{width:100%; display:flex; flex-wrap:wrap; gap:4px; padding:10px;}
-  aside .logo{width:100%; padding-bottom:8px;} aside .sec{display:none;}
-  aside button{width:auto; padding:7px 11px; font-size:13px;}
-  main{padding:16px;} .grid2,.grid4{grid-template-columns:1fr;}
+  aside{width:276px;transform:translateX(-105%);transition:transform .24s ease;box-shadow:16px 0 40px rgba(13,31,51,.25)}
+  body.nav-open aside{transform:translateX(0)}
+  .shell{margin-left:0}.topbar{height:60px;padding:0 16px}.menu-toggle{display:block}.topbar-title{font-size:12px}
+  .nav-shade{display:block;position:fixed;inset:0;background:rgba(9,22,36,.44);z-index:25;opacity:0;pointer-events:none;transition:opacity .24s}
+  body.nav-open .nav-shade{opacity:1;pointer-events:auto}
+  main{padding:20px 14px 36px;} h1{font-size:23px}.grid2,.grid4,.quick-grid{grid-template-columns:1fr;}
+  .card{padding:16px 14px;border-radius:15px} table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}th,td{min-width:96px}
+  .sgrid,.shead{min-width:720px}.sgrid{overflow:visible}.card:has(.sgrid){overflow-x:auto}
+  .g65{min-width:900px}.msg{max-width:92%}
 }
+@media(min-width:841px) and (max-width:1120px){.grid4{grid-template-columns:repeat(2,1fr)}main{padding:26px 24px}}
+@media print{aside,.topbar,.nav-shade{display:none!important}.shell{margin:0}main{max-width:none;padding:0}.card{box-shadow:none;break-inside:avoid}body{background:#fff}}
 </style>
 </head>
 <body>
 <div id="app">
   <aside id="nav"></aside>
-  <main id="view"></main>
+  <div class="nav-shade" onclick="App.toggleNav(false)"></div>
+  <section class="shell">
+    <header class="topbar">
+      <div class="topbar-left"><button class="menu-toggle" onclick="App.toggleNav()" aria-label="메뉴 열기">☰</button><span class="topbar-title" id="pageLabel">통합 홈</span></div>
+      <div class="save-state" id="saveState">이 기기에 자동 저장</div>
+    </header>
+    <main id="view"></main>
+  </section>
 </div>
 <script>
 "use strict";
@@ -157,13 +181,34 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 /* ===== 상태 ===== */
 var state;
 try{ state = JSON.parse(localStorage.getItem(LS_KEY)) || seed(); }catch(e){ state = seed(); }
+/* 기존 V1 데이터를 유지하면서 V2에 필요한 구조만 보완한다. */
+if(!state.biz) state = seed();
+if(!state.metrics) state.metrics = {};
+if(!state.pipeline) state.pipeline = [];
+if(!state.contents) state.contents = [];
+if(!state.cash) state.cash = [];
+if(!state.routines) state.routines = [];
+if(!state.chat) state.chat = [];
+if(!state.settings) state.settings = {apiKey:"", model:"claude-sonnet-5"};
 if(!state.schedule) state.schedule = {startHour:8, endHour:23, blocks:[]};
 if(!state.grid) state.grid = { topics:["","","","","",""], formats:["핵심형","비교형","토크형","설명형","리스트형"], cells:{} };
 if(!state.suggest) state.suggest = {items:[], at:null};
 if(!state.orda) state.orda = {weeks:{}, lastBackup:null};
 if(!state.biz.hanglow) state.biz.hanglow = { status:"외국인 대상 한국어 학습 앱 개발 중 (개인 프로젝트)", problem:"미출시 — 웹앱·학습 콘텐츠(발음·문법·회화·K컬처)와 백엔드 준비는 진행, 출시 단계 미완", direction:"작게라도 출시 가능한 1차 버전(웹 우선 여부) 정의 후 배포", tasks:[t("현재 개발 단계 기록 (백엔드 Phase 어디까지 완료?)"),t("배포 주소(도메인/GitHub Pages) 확정해 대시보드에 연결"),t("1차 출시 범위 정하기 (웹 먼저 vs 앱스토어)")], memo:"" };
 if(!state.routines.some(function(x){return x.text.indexOf("오르다 주간 점검")>=0;})) state.routines.push(r("오르다 주간 점검 수치 입력 (납부·미션·피드백)","매주"));
-function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+state.version = 2;
+function save(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    var el=document.getElementById("saveState");
+    if(el){
+      el.textContent="방금 자동 저장됨";
+      clearTimeout(save._timer);
+      save._timer=setTimeout(function(){ if(el) el.textContent="이 기기에 자동 저장"; },1800);
+    }
+  }catch(e){ alert("저장 공간이 부족해 변경사항을 저장하지 못했습니다. JSON 백업을 내려받아 주세요."); }
+}
+save();
 /* ===== 유틸 ===== */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function fmt(n){ n=Number(n)||0; return n.toLocaleString("ko-KR"); }
@@ -184,7 +229,7 @@ function getMetric(wk,bid){ if(!state.metrics[wk]) state.metrics[wk]={}; if(!sta
 var route = "home";
 var curWeek = mondayOf();
 var curMonth = monthStr();
-function go(rt){ route = rt; render(); }
+function go(rt){ route = rt; document.body.classList.remove("nav-open"); render(); }
 var NAV = [
   ["home","🏠 통합 홈"],
   ["_sec","사업별"],
@@ -207,7 +252,7 @@ var NAV = [
   ["set","⚙️ 설정·백업"]
 ];
 function renderNav(){
-  var h = '<div class="logo">에듀케레 대시보드<small>1인 운영 통합 관리</small></div>';
+  var h = '<div class="logo">EDUCERE OS<small>비즈니스 통합 운영 대시보드 · V2</small></div>';
   NAV.forEach(function(n){
     if(n[0]==="_sec"){ h += '<div class="sec">'+n[1]+'</div>'; return; }
     h += '<button class="'+(route===n[0]?"on":"")+'" onclick="App.go(\''+n[0]+'\')">'+n[1]+'</button>';
@@ -233,6 +278,9 @@ function vHome(){
     }).join("")+'<div style="margin-top:8px"><button class="btn sm ghost" onclick="App.go(\'sched\')">주간 일정표 →</button></div></div>' : "";
   var tot = {inq:0,con:0,pay:0,rev:0};
   BIZ.forEach(function(b){ var m=getMetric(wk,b.id); tot.inq+=+m.inq||0; tot.con+=+m.con||0; tot.pay+=+m.pay||0; tot.rev+=+m.rev||0; });
+  var consultRate = tot.inq ? Math.round(tot.con/tot.inq*100) : 0;
+  var payRate = tot.con ? Math.round(tot.pay/tot.con*100) : 0;
+  var lateContents = state.contents.filter(function(c){return c.status!=="발행완료" && c.date && c.date<todayStr();}).length;
   var cards = BIZ.map(function(b){
     var d = state.biz[b.id];
     var open = d.tasks.filter(function(x){return !x.done;});
@@ -248,12 +296,18 @@ function vHome(){
   }).join("");
   return '<h1>통합 홈</h1><div class="sub">'+todayStr()+' · 이번 주 '+weekLabel(wk)+'</div>'+
     alerts.join("")+ todayCard +
-    '<div class="card"><h2 style="margin-top:0">이번 주 전체 지표</h2><div class="grid4">'+
-      kpi("문의·신청",fmt(tot.inq))+kpi("상담",fmt(tot.con))+kpi("등록·결제",fmt(tot.pay))+kpi("매출",fmt(tot.rev)+"원")+
+    '<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">이번 주 핵심 지표</h2><span class="badge">'+weekLabel(wk)+'</span></div><div class="grid4">'+
+      kpiHome("문의·신청",fmt(tot.inq),"이번 주 유입","")+kpiHome("상담",fmt(tot.con),"문의→상담 "+consultRate+"%","")+kpiHome("등록·결제",fmt(tot.pay),"상담→결제 "+payRate+"%","accent")+kpiHome("매출",fmt(tot.rev)+"원","주간 합계","")+
+    '</div></div>'+
+    '<div class="card"><h2 style="margin-top:0">지금 확인할 운영 신호</h2><div class="quick-grid">'+
+      '<div class="quick-item"><span class="hint">미완료 운영 루틴</span><b>'+due.length+'건</b></div>'+
+      '<div class="quick-item"><span class="hint">후속 연락 필요 고객</span><b>'+follow.length+'명</b></div>'+
+      '<div class="quick-item"><span class="hint">기한 지난 콘텐츠</span><b>'+lateContents+'건</b></div>'+
     '</div></div>'+
     '<h2>사업별 현황</h2><div class="grid2">'+cards+'</div>';
 }
 function kpi(label,val){ return '<div><b style="font-size:12px;color:var(--sub)">'+label+'</b><div class="big">'+val+'</div></div>'; }
+function kpiHome(label,val,note,cls){ return '<div class="kpi-card '+(cls||"")+'"><div class="kpi-label"><span>'+label+'</span></div><div class="big">'+val+'</div><div class="kpi-note">'+note+'</div></div>'; }
 /* ===== 화면: 사업별 ===== */
 function vBiz(bid){
   var b = BIZ.find(function(x){return x.id===bid;});
@@ -541,26 +595,33 @@ function setAIStatus(s){ var el=document.getElementById("aiStatus"); if(el) el.t
 /* ===== 화면: 설정 ===== */
 function vSet(){
   return '<h1>설정 · 백업</h1><div class="sub">데이터는 이 컴퓨터의 브라우저 안에만 저장됩니다. 정기 백업이 중요합니다.</div>'+
+  '<div class="card"><h2 style="margin-top:0">현재 데이터 상태</h2><div class="quick-grid">'+
+    '<div class="quick-item"><span class="hint">데이터 버전</span><b>V'+esc(state.version||1)+'</b></div>'+
+    '<div class="quick-item"><span class="hint">상담 고객</span><b>'+state.pipeline.length+'명</b></div>'+
+    '<div class="quick-item"><span class="hint">콘텐츠 기록</span><b>'+state.contents.length+'건</b></div>'+
+  '</div></div>'+
   '<div class="card"><h2 style="margin-top:0">💾 데이터 백업·복원</h2>'+
   '<div class="row"><button class="btn" onclick="App.exportJSON()">JSON 백업 내려받기</button>'+
   '<label class="btn ghost" style="cursor:pointer">백업 불러오기<input type="file" accept=".json" style="display:none" onchange="App.importJSON(this)"></label>'+
-  '<button class="btn ghost" onclick="App.copyMD()">옵시디언용 요약 복사</button></div>'+
+  '<button class="btn ghost" onclick="App.copyMD()">옵시디언용 요약 복사</button>'+
+  (localStorage.getItem("educere_dashboard_recovery_v2")?'<button class="btn gray" onclick="App.restoreRecovery()">직전 데이터 복구</button>':'')+'</div>'+
   '<div class="hint" style="margin-top:10px">마지막 백업: '+(state.lastExport||"기록 없음")+'<br>'+
   '· <b>JSON 백업</b>: 매주 1회 내려받아 옵시디언 볼트 폴더 등에 보관하세요. 브라우저 데이터를 지우면 기록이 사라질 수 있습니다.<br>'+
   '· <b>옵시디언용 요약</b>: 이번 주 상황을 마크다운으로 복사합니다. 옵시디언 새 노트에 붙여넣으면 됩니다.</div></div>'+
-  '<div class="card"><h2 style="margin-top:0">🤖 Claude API 연결</h2>'+
+  '<div class="card"><h2 style="margin-top:0">🤖 Claude API 연결 <span class="badge warn">실험 기능</span></h2>'+
   '<div class="kv"><b>API 키</b><input type="password" style="width:100%" value="'+esc(state.settings.apiKey)+'" placeholder="sk-ant-..." onchange="App.setSetting(\'apiKey\',this.value)"></div>'+
   '<div class="kv"><b>모델</b><select onchange="App.setSetting(\'model\',this.value)">'+
     '<option value="claude-sonnet-5" '+(state.settings.model==="claude-sonnet-5"?"selected":"")+'>Claude Sonnet 5 (추천)</option>'+
     '<option value="claude-haiku-4-5-20251001" '+(state.settings.model==="claude-haiku-4-5-20251001"?"selected":"")+'>Claude Haiku 4.5 (더 저렴·빠름)</option>'+
     '<option value="claude-opus-4-8" '+(state.settings.model==="claude-opus-4-8"?"selected":"")+'>Claude Opus 4.8 (더 깊은 분석)</option>'+
   '</select></div>'+
+  '<div class="alert red">현재 GitHub Pages의 브라우저 직접 연결 방식은 개인 전용 임시 사용에만 적합합니다. 공동 사용·외부 판매 전에는 서버 중계 방식으로 변경해야 합니다.</div>'+
   '<div class="hint">· 키 발급: console.anthropic.com → API Keys → Create Key<br>'+
-  '· 키는 이 컴퓨터에만 저장됩니다. <b>다른 사람과 공유하거나 인터넷에 올리지 마세요.</b><br>'+
+  '· 키는 이 브라우저에 저장됩니다. <b>공용 컴퓨터에서 사용하거나 다른 사람과 공유하지 마세요.</b><br>'+
   '· 사용한 만큼 요금이 부과됩니다(질문당 수십 원 수준, 모델에 따라 다름).</div></div>'+
   '<div class="card"><h2 style="margin-top:0">⚠️ 초기화</h2>'+
   '<button class="btn sm gray" onclick="App.reset()">모든 데이터 초기화</button>'+
-  '<div class="hint" style="margin-top:6px">처음 상태(볼트 기반 기본값)로 되돌립니다. 백업을 먼저 내려받으세요.</div></div>';
+  '<div class="hint" style="margin-top:6px">초기화 직전 데이터는 자동으로 임시 보관되어 이 화면에서 한 번 복구할 수 있습니다.</div></div>';
 }
 /* ===== 화면: 주간 일정표 ===== */
 function schedCats(){ return BIZ.concat([{id:"common", name:"공통·개인", short:"공통", color:"#868e96"}]); }
@@ -734,6 +795,10 @@ function vGrid(){
 /* ===== 액션 ===== */
 var App = {
   go: go,
+  toggleNav: function(force){
+    var open = typeof force==="boolean" ? force : !document.body.classList.contains("nav-open");
+    document.body.classList.toggle("nav-open",open);
+  },
   setBiz: function(bid,k,v){ state.biz[bid][k]=v; save(); },
   setOrda: function(k,v){ ordaWeek()[k]=v; save(); },
   ordaBackupDone: function(){ state.orda.lastBackup=todayStr(); save(); render(); },
@@ -787,10 +852,24 @@ var App = {
     var rd = new FileReader();
     rd.onload = function(){
       try{ var s=JSON.parse(rd.result); if(!s.biz||!s.routines) throw new Error("형식 오류");
-        if(confirm("현재 데이터를 백업 파일 내용으로 바꿀까요?")){ state=s; save(); render(); alert("복원 완료"); }
+        if(confirm("현재 데이터를 백업 파일 내용으로 바꿀까요?\n현재 데이터는 직전 복구본으로 임시 보관됩니다.")){ App.keepRecovery(); state=s; state.version=2; save(); render(); alert("복원 완료"); }
       }catch(e){ alert("올바른 백업 파일이 아닙니다."); }
+      input.value="";
     };
     rd.readAsText(f);
+  },
+  keepRecovery: function(){
+    try{ localStorage.setItem("educere_dashboard_recovery_v2",JSON.stringify({at:new Date().toISOString(),data:state})); }catch(e){}
+  },
+  restoreRecovery: function(){
+    try{
+      var raw=localStorage.getItem("educere_dashboard_recovery_v2");
+      if(!raw){ alert("복구할 임시 데이터가 없습니다."); return; }
+      var pack=JSON.parse(raw);
+      if(!pack.data||!pack.data.biz) throw new Error("형식 오류");
+      if(!confirm("직전 데이터로 되돌릴까요?\n현재 데이터는 JSON 백업 후 진행하는 것을 권합니다.")) return;
+      state=pack.data; state.version=2; save(); render(); alert("직전 데이터로 복구했습니다.");
+    }catch(e){ alert("임시 복구 데이터를 읽지 못했습니다."); }
   },
   copyMD: function(){
     var wk = mondayOf();
@@ -812,7 +891,12 @@ var App = {
       navigator.clipboard.writeText(text).then(function(){ alert("복사 완료! 옵시디언 새 노트에 붙여넣으세요."); },function(){ prompt("아래 내용을 복사하세요", text); });
     } else { prompt("아래 내용을 복사하세요", text); }
   },
-  reset: function(){ if(!confirm("정말 초기화할까요? 되돌릴 수 없습니다."))return; state=seed(); save(); render(); }
+  reset: function(){
+    if(!confirm("모든 사업·상담·매출·콘텐츠 데이터를 초기화할까요?")) return;
+    var word=prompt('계속하려면 "초기화"라고 입력하세요.');
+    if(word!=="초기화"){ alert("초기화를 취소했습니다."); return; }
+    App.keepRecovery(); state=seed(); state.version=2; save(); render(); alert("초기화했습니다. 직전 데이터는 설정에서 복구할 수 있습니다.");
+  }
 };
 /* ===== 렌더 ===== */
 /* ===== 화면: 자동 예약 작업 (Claude) ===== */
@@ -882,6 +966,11 @@ function render(){
   else if(route==="ai") v.innerHTML = vAI();
   else if(route==="auto") v.innerHTML = vAuto();
   else if(route==="set") v.innerHTML = vSet();
+  var label=document.getElementById("pageLabel");
+  if(label){
+    var navItem=NAV.find(function(n){return n[0]===route;});
+    label.textContent=navItem?navItem[1].replace(/^[^\s]+\s/,""):(route.indexOf("biz:")===0?bizName(route.slice(4)):"EDUCERE OS");
+  }
   var box=document.getElementById("chatBox"); if(box) box.scrollTop=box.scrollHeight;
 }
 render();

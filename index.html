@@ -67,6 +67,7 @@ button.del:hover{color:var(--bad);}
 .big{font-size:24px; font-weight:850; letter-spacing:-.5px;}
 .kpi-card{padding:14px 15px;border-radius:14px;background:linear-gradient(145deg,#fff,#f7f9fb);border:1px solid #edf0f2;min-width:0}.kpi-card .kpi-label{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--sub);font-weight:700;margin-bottom:7px}.kpi-card .kpi-note{font-size:11px;color:var(--sub);margin-top:4px}.kpi-card.accent{background:linear-gradient(145deg,#fff8f5,#fff);border-color:#f4ded6}
 .quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.quick-item{padding:14px;border-radius:14px;background:#f7f8fa;border:1px solid #edf0f2}.quick-item b{display:block;font-size:20px;margin-top:5px;color:var(--brand-deep)}
+.chart-wrap{padding:16px 10px 4px;border-radius:14px;background:linear-gradient(180deg,#f8fafc,#fff);border:1px solid #edf0f2;overflow-x:auto}.bar-chart{height:240px;min-width:620px;display:flex;align-items:flex-end;gap:12px;padding:18px 8px 30px;border-bottom:1px solid #dfe5ea}.bar-col{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative;min-width:54px}.bar-fill{width:min(46px,72%);min-height:3px;border-radius:9px 9px 3px 3px;background:linear-gradient(180deg,#4e7aa5,#244a73);box-shadow:0 7px 18px rgba(36,74,115,.18);position:relative}.bar-fill.accent{background:linear-gradient(180deg,#ee9a7f,#d66a4a)}.bar-value{font-size:10px;font-weight:800;color:var(--brand-deep);margin-bottom:5px;white-space:nowrap}.bar-label{position:absolute;bottom:-24px;font-size:10.5px;color:var(--sub);white-space:nowrap}.funnel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.funnel-step{position:relative;padding:16px;border-radius:15px;background:var(--brand-soft);border:1px solid #dce7f0}.funnel-step:not(:last-child):after{content:"→";position:absolute;right:-10px;top:50%;transform:translate(50%,-50%);z-index:2;color:var(--accent);font-weight:900}.funnel-step span{display:block;font-size:11px;color:var(--sub);font-weight:700}.funnel-step b{display:block;font-size:24px;margin:5px 0 2px}.funnel-step small{color:var(--brand);font-weight:700}.compare{display:grid;gap:11px}.compare-row{display:grid;grid-template-columns:110px 1fr 88px;gap:10px;align-items:center;font-size:12px}.compare-track{height:10px;border-radius:99px;background:#edf0f2;overflow:hidden}.compare-fill{height:100%;border-radius:99px;background:var(--bc,var(--brand));min-width:2px}.filterbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.filterbar input{flex:1;min-width:220px}.overdue-row{background:#fff4f1!important}.due-today-row{background:#fff9e8!important}.pipe-status{white-space:nowrap}.empty-filter{padding:18px;text-align:center;color:var(--sub);font-size:13px;display:none}
 .bar{height:8px; background:var(--brand); border-radius:4px; min-width:2px;}
 .barwrap{background:#eef0f4; border-radius:4px; width:100%;}
 .alert{background:#fff9db; border:1px solid #ffe08a; border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:13.5px;}
@@ -103,6 +104,7 @@ button.del:hover{color:var(--bad);}
   .card{padding:16px 14px;border-radius:15px} table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}th,td{min-width:96px}
   .sgrid,.shead{min-width:720px}.sgrid{overflow:visible}.card:has(.sgrid){overflow-x:auto}
   .g65{min-width:900px}.msg{max-width:92%}
+  .funnel{grid-template-columns:1fr}.funnel-step:not(:last-child):after{content:"↓";right:50%;top:auto;bottom:-12px;transform:translate(50%,50%)}.compare-row{grid-template-columns:82px 1fr 72px}.filterbar input{min-width:100%}
 }
 @media(min-width:841px) and (max-width:1120px){.grid4{grid-template-columns:repeat(2,1fr)}main{padding:26px 24px}}
 @media print{aside,.topbar,.nav-shade{display:none!important}.shell{margin:0}main{max-width:none;padding:0}.card{box-shadow:none;break-inside:avoid}body{background:#fff}}
@@ -181,7 +183,7 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 /* ===== 상태 ===== */
 var state;
 try{ state = JSON.parse(localStorage.getItem(LS_KEY)) || seed(); }catch(e){ state = seed(); }
-/* 기존 V1 데이터를 유지하면서 V2에 필요한 구조만 보완한다. */
+/* 기존 V1·V2 데이터를 유지하면서 최신 구조에 필요한 빈 항목만 보완한다. */
 if(!state.biz) state = seed();
 if(!state.metrics) state.metrics = {};
 if(!state.pipeline) state.pipeline = [];
@@ -196,7 +198,7 @@ if(!state.suggest) state.suggest = {items:[], at:null};
 if(!state.orda) state.orda = {weeks:{}, lastBackup:null};
 if(!state.biz.hanglow) state.biz.hanglow = { status:"외국인 대상 한국어 학습 앱 개발 중 (개인 프로젝트)", problem:"미출시 — 웹앱·학습 콘텐츠(발음·문법·회화·K컬처)와 백엔드 준비는 진행, 출시 단계 미완", direction:"작게라도 출시 가능한 1차 버전(웹 우선 여부) 정의 후 배포", tasks:[t("현재 개발 단계 기록 (백엔드 Phase 어디까지 완료?)"),t("배포 주소(도메인/GitHub Pages) 확정해 대시보드에 연결"),t("1차 출시 범위 정하기 (웹 먼저 vs 앱스토어)")], memo:"" };
 if(!state.routines.some(function(x){return x.text.indexOf("오르다 주간 점검")>=0;})) state.routines.push(r("오르다 주간 점검 수치 입력 (납부·미션·피드백)","매주"));
-state.version = 2;
+state.version = 3;
 function save(){
   try{
     localStorage.setItem(LS_KEY, JSON.stringify(state));
@@ -241,6 +243,7 @@ var NAV = [
   ["_sec","운영"],
   ["sched","🗓 주간 일정표"],
   ["metrics","📊 주간 실적"],
+  ["analytics","📈 분석 리포트"],
   ["pipe","👥 상담 파이프라인"],
   ["cal","📅 콘텐츠 캘린더"],
   ["grid","🧩 콘텐츠 기획 6×5"],
@@ -252,7 +255,7 @@ var NAV = [
   ["set","⚙️ 설정·백업"]
 ];
 function renderNav(){
-  var h = '<div class="logo">EDUCERE OS<small>비즈니스 통합 운영 대시보드 · V2</small></div>';
+  var h = '<div class="logo">EDUCERE OS<small>비즈니스 통합 운영 대시보드 · V3</small></div>';
   NAV.forEach(function(n){
     if(n[0]==="_sec"){ h += '<div class="sec">'+n[1]+'</div>'; return; }
     h += '<button class="'+(route===n[0]?"on":"")+'" onclick="App.go(\''+n[0]+'\')">'+n[1]+'</button>';
@@ -410,26 +413,92 @@ function vMetrics(){
   '<div class="card"><h2 style="margin-top:0">최근 흐름 (전체 합계)</h2>'+
   '<table><tr><th>주</th><th>문의</th><th>상담</th><th>결제</th><th>매출</th><th>매출 추이</th></tr>'+hist+'</table></div>';
 }
+/* ===== 화면: 분석 리포트 ===== */
+function recentWeeks(n){
+  var arr=[]; var now=mondayOf();
+  for(var i=n-1;i>=0;i--) arr.push(shiftWeek(now,-i));
+  return arr;
+}
+function weekTotals(wk){
+  var s={inq:0,con:0,pay:0,rev:0};
+  BIZ.forEach(function(b){ var m=(state.metrics[wk]||{})[b.id]; if(m){s.inq+=+m.inq||0;s.con+=+m.con||0;s.pay+=+m.pay||0;s.rev+=+m.rev||0;} });
+  return s;
+}
+function pct(a,b){ return b?Math.round(a/b*100):0; }
+function shortMoney(n){ n=+n||0; if(n>=100000000)return (n/100000000).toFixed(n%100000000?1:0)+"억"; if(n>=10000)return Math.round(n/10000)+"만"; return fmt(n); }
+function vAnalytics(){
+  var weeks=recentWeeks(8);
+  var series=weeks.map(function(w){return {wk:w,data:weekTotals(w)};});
+  var maxRev=Math.max.apply(null,series.map(function(x){return x.data.rev;} ).concat([1]));
+  var bars=series.map(function(x){
+    var h=Math.max(2,Math.round(x.data.rev/maxRev*100));
+    return '<div class="bar-col"><div class="bar-value">'+shortMoney(x.data.rev)+'</div><div class="bar-fill" style="height:'+h+'%" title="'+fmt(x.data.rev)+'원"></div><div class="bar-label">'+weekLabel(x.wk).split(" ~ ")[0]+'</div></div>';
+  }).join("");
+  var four=series.slice(-4), sum={inq:0,con:0,pay:0,rev:0};
+  four.forEach(function(x){sum.inq+=x.data.inq;sum.con+=x.data.con;sum.pay+=x.data.pay;sum.rev+=x.data.rev;});
+  var bizData=BIZ.map(function(b){
+    var s={inq:0,con:0,pay:0,rev:0};
+    four.forEach(function(x){var m=(state.metrics[x.wk]||{})[b.id];if(m){s.inq+=+m.inq||0;s.con+=+m.con||0;s.pay+=+m.pay||0;s.rev+=+m.rev||0;}});
+    return {biz:b,data:s};
+  });
+  var maxBiz=Math.max.apply(null,bizData.map(function(x){return x.data.rev;}).concat([1]));
+  var compare=bizData.map(function(x){return '<div class="compare-row"><b>'+esc(x.biz.short)+'</b><div class="compare-track"><div class="compare-fill" style="--bc:'+x.biz.color+';width:'+Math.round(x.data.rev/maxBiz*100)+'%"></div></div><span class="num">'+shortMoney(x.data.rev)+'원</span></div>';}).join("");
+  var best=bizData.slice().sort(function(a,b){return b.data.rev-a.data.rev;})[0];
+  var insight=[];
+  if(!sum.inq&&!sum.con&&!sum.pay&&!sum.rev) insight.push("최근 4주 실적이 비어 있습니다. 주간 실적을 입력하면 분석이 자동으로 생성됩니다.");
+  else{
+    if(sum.inq && pct(sum.con,sum.inq)<50) insight.push("문의 대비 상담 전환율이 "+pct(sum.con,sum.inq)+"%입니다. 미응답 문의와 상담 예약 과정을 점검해 보세요.");
+    if(sum.con && pct(sum.pay,sum.con)<30) insight.push("상담 대비 결제 전환율이 "+pct(sum.pay,sum.con)+"%입니다. 보류 사유를 상담 메모에 남기면 개선 지점을 찾기 쉽습니다.");
+    if(best&&best.data.rev>0) insight.push("최근 4주 매출 기여가 가장 큰 사업은 "+best.biz.name+"입니다.");
+  }
+  var mc=state.cash.filter(function(c){return c.month===monthStr();}), inc=0,out=0;
+  mc.forEach(function(c){if(c.type==="수입")inc+=+c.amount||0;else out+=+c.amount||0;});
+  return '<h1>분석 리포트</h1><div class="sub">입력된 운영 데이터를 최근 4주와 8주 흐름으로 자동 분석합니다.</div>'+
+  '<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">최근 8주 매출 추이</h2><button class="btn sm ghost" onclick="App.exportMetricsCSV()">실적 CSV 내려받기</button></div><div class="chart-wrap"><div class="bar-chart">'+bars+'</div></div></div>'+
+  '<div class="grid2"><div class="card"><h2 style="margin-top:0">최근 4주 전환 퍼널</h2><div class="funnel">'+
+    '<div class="funnel-step"><span>문의·신청</span><b>'+fmt(sum.inq)+'</b><small>유입 100%</small></div>'+
+    '<div class="funnel-step"><span>상담</span><b>'+fmt(sum.con)+'</b><small>문의 대비 '+pct(sum.con,sum.inq)+'%</small></div>'+
+    '<div class="funnel-step"><span>등록·결제</span><b>'+fmt(sum.pay)+'</b><small>상담 대비 '+pct(sum.pay,sum.con)+'%</small></div>'+
+  '</div></div><div class="card"><h2 style="margin-top:0">이번 달 현금 신호</h2><div class="grid2">'+kpi("수입",'<span class="plus">'+fmt(inc)+'원</span>')+kpi("지출",'<span class="minus">'+fmt(out)+'원</span>')+kpi("순현금흐름",fmt(inc-out)+'원')+kpi("최근 4주 매출",fmt(sum.rev)+'원')+'</div></div></div>'+
+  '<div class="grid2"><div class="card"><h2 style="margin-top:0">사업별 최근 4주 매출 비교</h2><div class="compare">'+compare+'</div></div>'+
+  '<div class="card"><h2 style="margin-top:0">자동 점검</h2>'+insight.map(function(x){return '<div class="alert">'+esc(x)+'</div>';}).join("")+'</div></div>';
+}
 /* ===== 화면: 파이프라인 ===== */
 function vPipe(){
   var counts = STAGES.map(function(s){
     var n = state.pipeline.filter(function(p){return p.stage===s;}).length;
     return '<span class="badge" style="margin-right:6px">'+s+' '+n+'</span>';
   }).join("");
-  var rows = state.pipeline.map(function(p){
+  function isActive(p){return p.stage!=="등록·결제"&&p.stage!=="보류";}
+  var overdue=state.pipeline.filter(function(p){return isActive(p)&&p.nextDate&&p.nextDate<todayStr();}).length;
+  var todayDue=state.pipeline.filter(function(p){return isActive(p)&&p.nextDate===todayStr();}).length;
+  var items=state.pipeline.slice().sort(function(a,b){
+    var ad=a.nextDate||"9999-12-31",bd=b.nextDate||"9999-12-31";
+    return ad<bd?-1:ad>bd?1:0;
+  });
+  var rows = items.map(function(p){
     var bizOpt = BIZ.map(function(b){ return '<option value="'+b.id+'" '+(p.biz===b.id?"selected":"")+'>'+b.short+'</option>'; }).join("");
     var stOpt = STAGES.map(function(s){ return '<option '+(p.stage===s?"selected":"")+'>'+s+'</option>'; }).join("");
-    return '<tr>'+
+    var late=isActive(p)&&p.nextDate&&p.nextDate<todayStr();
+    var today=isActive(p)&&p.nextDate===todayStr();
+    var status=late?'<span class="badge bad">지연</span>':today?'<span class="badge warn">오늘</span>':p.nextDate?'<span class="badge ok">예정</span>':'<span class="badge">미정</span>';
+    return '<tr class="pipe-row '+(late?'overdue-row':today?'due-today-row':'')+'" data-stage="'+esc(p.stage)+'" data-search="'+esc((p.name+' '+p.note+' '+bizName(p.biz)).toLowerCase())+'">'+
       '<td style="width:130px"><input value="'+esc(p.name)+'" placeholder="이름" onchange="App.setPipe(\''+p.id+'\',\'name\',this.value)"></td>'+
       '<td style="width:100px"><select onchange="App.setPipe(\''+p.id+'\',\'biz\',this.value)">'+bizOpt+'</select></td>'+
       '<td style="width:110px"><select onchange="App.setPipe(\''+p.id+'\',\'stage\',this.value)">'+stOpt+'</select></td>'+
-      '<td><input value="'+esc(p.note)+'" placeholder="메모 (학년, 니즈, 다음 연락일 등)" onchange="App.setPipe(\''+p.id+'\',\'note\',this.value)"></td>'+
+      '<td><input value="'+esc(p.note)+'" placeholder="학년·관심 서비스·상담 핵심 메모" onchange="App.setPipe(\''+p.id+'\',\'note\',this.value)"></td>'+
       '<td style="width:120px"><input type="date" value="'+esc(p.date)+'" onchange="App.setPipe(\''+p.id+'\',\'date\',this.value)"></td>'+
+      '<td style="width:125px"><input type="date" value="'+esc(p.nextDate||"")+'" onchange="App.setPipe(\''+p.id+'\',\'nextDate\',this.value)"></td>'+
+      '<td class="pipe-status" style="width:76px">'+status+'</td>'+
+      '<td style="width:76px"><button class="btn sm gray" onclick="App.setPipeNext(\''+p.id+'\',7)">+7일</button></td>'+
       '<td style="width:36px"><button class="del" onclick="App.delPipe(\''+p.id+'\')">✕</button></td></tr>';
-  }).join("") || '<tr><td colspan="6" class="hint">아직 등록된 고객이 없습니다. 문의가 오면 바로 추가하세요. 재상담 대상 학부모도 여기에 넣어 관리하면 좋습니다.</td></tr>';
+  }).join("") || '<tr><td colspan="9" class="hint">아직 등록된 고객이 없습니다. 문의가 오면 바로 추가하세요. 재상담 대상 학부모도 여기에 넣어 관리하면 좋습니다.</td></tr>';
   return '<h1>상담·고객 파이프라인</h1><div class="sub">문의 → 상담 → 등록·결제까지, 한 사람도 잊지 않기 위한 목록입니다.</div>'+
+  '<div class="grid4">'+kpiHome("전체 고객",state.pipeline.length+"명","현재 파이프라인","")+kpiHome("재연락 지연",overdue+"명","예정일 경과",overdue?"accent":"")+kpiHome("오늘 연락",todayDue+"명",todayStr(),"")+kpiHome("등록·결제",state.pipeline.filter(function(p){return p.stage==="등록·결제";}).length+"명","누적 기록","")+'</div>'+
   '<div class="card"><div style="margin-bottom:10px">'+counts+'</div>'+
-  '<table><tr><th>이름</th><th>사업</th><th>단계</th><th>메모</th><th>최근 접점</th><th></th></tr>'+rows+'</table>'+
+  '<div class="filterbar"><input id="pipeSearch" placeholder="이름·메모·사업 검색" oninput="App.applyPipeFilters()"><select id="pipeStageFilter" onchange="App.applyPipeFilters()"><option value="">전체 단계</option>'+STAGES.map(function(s){return '<option>'+s+'</option>';}).join("")+'</select><button class="btn sm gray" onclick="App.clearPipeFilters()">필터 초기화</button></div>'+
+  '<table><tr><th>이름</th><th>사업</th><th>단계</th><th>상담 메모</th><th>최근 접점</th><th>다음 연락</th><th>상태</th><th>빠른 설정</th><th></th></tr>'+rows+'</table>'+
+  '<div class="empty-filter" id="pipeEmpty">조건에 맞는 고객이 없습니다.</div>'+
   '<button class="btn sm" style="margin-top:10px" onclick="App.addPipe()">+ 고객 추가</button></div>';
 }
 /* ===== 화면: 콘텐츠 캘린더 ===== */
@@ -808,8 +877,22 @@ var App = {
   week: function(n){ curWeek=shiftWeek(curWeek,n); render(); },
   weekNow: function(){ curWeek=mondayOf(); render(); },
   setMetric: function(bid,k,v){ var m=getMetric(curWeek,bid); m[k]= k==="note"? v : (+v||0); save(); },
-  addPipe: function(){ state.pipeline.push({id:uid(),name:"",biz:"academy",stage:"문의",note:"",date:todayStr()}); save(); render(); },
-  setPipe: function(id,k,v){ var p=state.pipeline.find(function(a){return a.id===id;}); if(p){p[k]=v; save(); if(k==="stage")render();} },
+  addPipe: function(){ state.pipeline.push({id:uid(),name:"",biz:"academy",stage:"문의",note:"",date:todayStr(),nextDate:""}); save(); render(); },
+  setPipe: function(id,k,v){ var p=state.pipeline.find(function(a){return a.id===id;}); if(p){p[k]=v; save(); if(k==="stage"||k==="nextDate")render();} },
+  setPipeNext: function(id,days){
+    var p=state.pipeline.find(function(a){return a.id===id;}); if(!p)return;
+    var d=new Date(); d.setDate(d.getDate()+(+days||0));
+    p.nextDate=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    save(); render();
+  },
+  applyPipeFilters: function(){
+    var q=(document.getElementById("pipeSearch")||{}).value||""; q=q.trim().toLowerCase();
+    var stage=(document.getElementById("pipeStageFilter")||{}).value||"";
+    var rows=document.querySelectorAll(".pipe-row"), visible=0;
+    rows.forEach(function(row){var ok=(!q||(row.dataset.search||"").indexOf(q)>=0)&&(!stage||row.dataset.stage===stage);row.style.display=ok?"":"none";if(ok)visible++;});
+    var empty=document.getElementById("pipeEmpty"); if(empty)empty.style.display=(rows.length&&visible===0)?"block":"none";
+  },
+  clearPipeFilters: function(){ var q=document.getElementById("pipeSearch"),s=document.getElementById("pipeStageFilter");if(q)q.value="";if(s)s.value="";App.applyPipeFilters(); },
   delPipe: function(id){ state.pipeline=state.pipeline.filter(function(a){return a.id!==id;}); save(); render(); },
   addCal: function(){ state.contents.push({id:uid(),date:todayStr(),biz:"evayon",channel:CH[0],title:"",status:"예정"}); save(); render(); },
   setCal: function(id,k,v){ var c=state.contents.find(function(a){return a.id===id;}); if(c){c[k]=v; save(); if(k==="status"||k==="date")render();} },
@@ -847,12 +930,20 @@ var App = {
     a.download = "에듀케레대시보드_백업_"+todayStr().replace(/-/g,"")+".json";
     a.click(); render();
   },
+  exportMetricsCSV: function(){
+    function cell(v){v=String(v==null?"":v);if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';}
+    var rows=[["주 시작일","기간","사업","문의·신청","상담","등록·결제","매출(원)","메모"]];
+    Object.keys(state.metrics).sort().forEach(function(wk){BIZ.forEach(function(b){var m=(state.metrics[wk]||{})[b.id];if(m)rows.push([wk,weekLabel(wk),b.name,m.inq||0,m.con||0,m.pay||0,m.rev||0,m.note||""]);});});
+    var csv="\ufeff"+rows.map(function(row){return row.map(cell).join(",");}).join("\r\n");
+    var blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a"),url=URL.createObjectURL(blob);
+    a.href=url;a.download="에듀케레_주간실적_"+todayStr().replace(/-/g,"")+".csv";a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  },
   importJSON: function(input){
     var f = input.files[0]; if(!f) return;
     var rd = new FileReader();
     rd.onload = function(){
       try{ var s=JSON.parse(rd.result); if(!s.biz||!s.routines) throw new Error("형식 오류");
-        if(confirm("현재 데이터를 백업 파일 내용으로 바꿀까요?\n현재 데이터는 직전 복구본으로 임시 보관됩니다.")){ App.keepRecovery(); state=s; state.version=2; save(); render(); alert("복원 완료"); }
+        if(confirm("현재 데이터를 백업 파일 내용으로 바꿀까요?\n현재 데이터는 직전 복구본으로 임시 보관됩니다.")){ App.keepRecovery(); state=s; state.version=3; save(); render(); alert("복원 완료"); }
       }catch(e){ alert("올바른 백업 파일이 아닙니다."); }
       input.value="";
     };
@@ -868,7 +959,7 @@ var App = {
       var pack=JSON.parse(raw);
       if(!pack.data||!pack.data.biz) throw new Error("형식 오류");
       if(!confirm("직전 데이터로 되돌릴까요?\n현재 데이터는 JSON 백업 후 진행하는 것을 권합니다.")) return;
-      state=pack.data; state.version=2; save(); render(); alert("직전 데이터로 복구했습니다.");
+      state=pack.data; state.version=3; save(); render(); alert("직전 데이터로 복구했습니다.");
     }catch(e){ alert("임시 복구 데이터를 읽지 못했습니다."); }
   },
   copyMD: function(){
@@ -895,7 +986,7 @@ var App = {
     if(!confirm("모든 사업·상담·매출·콘텐츠 데이터를 초기화할까요?")) return;
     var word=prompt('계속하려면 "초기화"라고 입력하세요.');
     if(word!=="초기화"){ alert("초기화를 취소했습니다."); return; }
-    App.keepRecovery(); state=seed(); state.version=2; save(); render(); alert("초기화했습니다. 직전 데이터는 설정에서 복구할 수 있습니다.");
+    App.keepRecovery(); state=seed(); state.version=3; save(); render(); alert("초기화했습니다. 직전 데이터는 설정에서 복구할 수 있습니다.");
   }
 };
 /* ===== 렌더 ===== */
@@ -957,6 +1048,7 @@ function render(){
   if(route==="home") v.innerHTML = vHome();
   else if(route.indexOf("biz:")===0) v.innerHTML = vBiz(route.slice(4));
   else if(route==="metrics") v.innerHTML = vMetrics();
+  else if(route==="analytics") v.innerHTML = vAnalytics();
   else if(route==="pipe") v.innerHTML = vPipe();
   else if(route==="cal") v.innerHTML = vCal();
   else if(route==="cash") v.innerHTML = vCash();

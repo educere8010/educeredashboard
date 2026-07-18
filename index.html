@@ -94,6 +94,14 @@ button.del:hover{color:var(--bad);}
 .g65 .cellwrap{display:flex; flex-direction:column; gap:3px;}
 .g65 .mini{font-size:10.5px; color:var(--brand); background:none; border:none; cursor:pointer; text-align:left; padding:0; font-family:inherit;}
 .g65 .sent{font-size:10.5px; color:var(--ok);}
+.master-hero{background:linear-gradient(135deg,#102a43 0%,#163f63 58%,#0b7285 100%);color:#fff;border-radius:22px;padding:25px;margin-bottom:18px;box-shadow:0 18px 42px rgba(13,42,67,.16)}
+.master-hero .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;color:#9de2e6}.master-hero h1{margin:7px 0 6px;color:#fff}.master-hero p{margin:0;color:#dceaf2;line-height:1.65}
+.master-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}.master-actions .btn{background:#fff;color:#12324b}.master-actions .btn.primary{background:#ff922b;color:#fff}
+.health-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}.health-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;overflow:hidden;cursor:pointer}.health-card:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--hc)}.health-card h3{font-size:14px;margin:0 0 8px}.health-card .health-status{font-size:11px;font-weight:800;color:var(--hc);margin-bottom:7px}.health-card .health-num{font-size:12px;color:var(--sub);line-height:1.65}.health-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.funnel-master{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.funnel-box{background:#f7f9fb;border:1px solid var(--line);border-radius:13px;padding:13px;text-align:center;position:relative}.funnel-box:not(:last-child):after{content:"→";position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:2;color:#8492a6;font-weight:900}.funnel-box b{display:block;font-size:19px;color:var(--ink)}.funnel-box span{font-size:11px;color:var(--sub)}
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.app-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;min-height:176px}.app-card .app-top{display:flex;justify-content:space-between;gap:8px}.app-card h3{margin:0 0 5px;font-size:15px}.app-card p{font-size:12.5px;color:var(--sub);line-height:1.6;flex:1}.app-card .app-meta{font-size:11px;color:var(--sub);margin:5px 0 12px}.app-card .app-actions{display:flex;gap:6px;flex-wrap:wrap}.live-dot{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:var(--ok);white-space:nowrap}.live-dot:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px #dff5e8}
+.roadmap-board{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}.roadmap-col{background:#f4f6f8;border-radius:15px;padding:12px}.roadmap-col h3{font-size:13px;margin:0 0 10px}.road-item{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;font-size:12px;line-height:1.45}.road-item b{display:block;color:var(--ink);margin-bottom:3px}.road-item small{color:var(--sub)}
+.data-flow{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.data-card{border:1px solid var(--line);border-radius:14px;padding:15px;background:#fff}.data-card h3{margin:0 0 7px;font-size:14px}.data-card p{font-size:12px;color:var(--sub);line-height:1.6;margin:0}.data-card .badge{margin-top:10px}
 @media(max-width:840px){
   aside{width:276px;transform:translateX(-105%);transition:transform .24s ease;box-shadow:16px 0 40px rgba(13,31,51,.25)}
   body.nav-open aside{transform:translateX(0)}
@@ -105,6 +113,7 @@ button.del:hover{color:var(--bad);}
   .sgrid,.shead{min-width:720px}.sgrid{overflow:visible}.card:has(.sgrid){overflow-x:auto}
   .g65{min-width:900px}.msg{max-width:92%}
   .funnel{grid-template-columns:1fr}.funnel-step:not(:last-child):after{content:"↓";right:50%;top:auto;bottom:-12px;transform:translate(50%,50%)}.compare-row{grid-template-columns:82px 1fr 72px}.filterbar input{min-width:100%}
+  .health-grid,.app-grid,.roadmap-board,.data-flow{grid-template-columns:1fr}.funnel-master{grid-template-columns:repeat(2,1fr)}.funnel-box:not(:last-child):after{display:none}.master-hero{padding:20px 17px}
 }
 @media(min-width:841px) and (max-width:1120px){.grid4{grid-template-columns:repeat(2,1fr)}main{padding:26px 24px}}
 @media print{aside,.topbar,.nav-shade{display:none!important}.shell{margin:0}main{max-width:none;padding:0}.card{box-shadow:none;break-inside:avoid}body{background:#fff}}
@@ -132,6 +141,15 @@ var BIZ = [
   {id:"evayon",  name:"에바연 바른교육연구소", short:"에바연", color:"#f76707"},
   {id:"studia",  name:"스터디아", short:"스터디아", color:"#7048e8"},
   {id:"hanglow", name:"한글로우 (HanGlow)", short:"한글로우", color:"#e64980"}
+];
+var APPS = [
+  {id:"biz",name:"비즈니스 대시보드",role:"대표자 경영·운영 기록",user:"대표자",data:"이 브라우저 + JSON 백업",url:"https://educere8010.github.io/educeredashboard/",repo:"https://github.com/educere8010/educeredashboard"},
+  {id:"eber",name:"바른학습관 학생관리",role:"출결·학습·입시·상담·리포트",user:"원장·강사·학생 태블릿",data:"Supabase + 이 브라우저",url:"https://educere8010.github.io/EBER-dashboard/",repo:"https://github.com/educere8010/EBER-dashboard"},
+  {id:"apply",name:"입시상담앱",role:"수시·정시 배치와 상담 결과",user:"원장·입시상담자",data:"이 브라우저",url:"https://educere8010.github.io/educereapply/",repo:"https://github.com/educere8010/educereapply"},
+  {id:"eva",name:"에바연 학생부 설계실",role:"진단·탐구·도서·입시 설계",user:"학생·학부모·구독회원",data:"Supabase + 이 브라우저",url:"https://educere8010.github.io/Eva-landing/",repo:"https://github.com/educere8010/Eva-landing"},
+  {id:"ordaland",name:"ORDA 소개·학습점검",role:"홍보·3분 점검·상담 전환",user:"예비 학생·학부모",data:"상담 API 점검 필요",url:"https://educere8010.github.io/orda-landing/",repo:"https://github.com/educere8010/orda-landing"},
+  {id:"orda",name:"ORDA 실제 학습앱",role:"영어·수학 자기주도 학습",user:"재원생·강사·원장",data:"별도 운영 시스템",url:"https://educere-orda.netlify.app/",repo:""},
+  {id:"studia",name:"스터디아",role:"AI 학습 서비스·구독",user:"학생·학부모",data:"Supabase·결제 시스템",url:"https://studia.co.kr",repo:""}
 ];
 var STAGES = ["문의","상담예정","상담완료","등록·결제","보류"];
 var CH = ["블로그","인스타그램","카카오채널","문자·알림톡","네이버카페","기타"];
@@ -196,6 +214,16 @@ if(!state.schedule) state.schedule = {startHour:8, endHour:23, blocks:[]};
 if(!state.grid) state.grid = { topics:["","","","","",""], formats:["핵심형","비교형","토크형","설명형","리스트형"], cells:{} };
 if(!state.suggest) state.suggest = {items:[], at:null};
 if(!state.orda) state.orda = {weeks:{}, lastBackup:null};
+if(!state.mastermap) state.mastermap = {focus:"바른학습관 학생관리 안정화와 ORDA 학습 경험 완성",roadmap:[
+  {stage:"now",title:"EBER 로그인·학생 데이터 안정화",owner:"운영"},
+  {stage:"now",title:"ORDA 5·6학년 통합본 확인",owner:"콘텐츠"},
+  {stage:"next",title:"ORDA 상담 접수 API 실제 테스트",owner:"개발"},
+  {stage:"next",title:"에바연 무료→구독 퍼널 계측",owner:"사업화"},
+  {stage:"later",title:"EBER 학생정보→입시상담앱 전달",owner:"연동"},
+  {stage:"later",title:"ORDA 학습성과→EBER 자동 연결",owner:"연동"},
+  {stage:"done",title:"EBER Supabase 클라우드 연결",owner:"완료"},
+  {stage:"done",title:"사업별 앱 실행 링크 통합",owner:"완료"}
+]};
 if(!state.biz.hanglow) state.biz.hanglow = { status:"외국인 대상 한국어 학습 앱 개발 중 (개인 프로젝트)", problem:"미출시 — 웹앱·학습 콘텐츠(발음·문법·회화·K컬처)와 백엔드 준비는 진행, 출시 단계 미완", direction:"작게라도 출시 가능한 1차 버전(웹 우선 여부) 정의 후 배포", tasks:[t("현재 개발 단계 기록 (백엔드 Phase 어디까지 완료?)"),t("배포 주소(도메인/GitHub Pages) 확정해 대시보드에 연결"),t("1차 출시 범위 정하기 (웹 먼저 vs 앱스토어)")], memo:"" };
 if(!state.routines.some(function(x){return x.text.indexOf("오르다 주간 점검")>=0;})) state.routines.push(r("오르다 주간 점검 수치 입력 (납부·미션·피드백)","매주"));
 state.version = 3;
@@ -233,7 +261,10 @@ var curWeek = mondayOf();
 var curMonth = monthStr();
 function go(rt){ route = rt; document.body.classList.remove("nav-open"); render(); }
 var NAV = [
-  ["home","🏠 통합 홈"],
+  ["home","🏠 사업화 마스터맵"],
+  ["apps","▦ 앱·서비스 지도"],
+  ["roadmap","◆ 개발 로드맵"],
+  ["data","⌁ 데이터·자동화"],
   ["_sec","사업별"],
   ["biz:academy","영수학원"],
   ["biz:gwan","바른학습관"],
@@ -263,7 +294,7 @@ function renderNav(){
   document.getElementById("nav").innerHTML = h;
 }
 /* ===== 화면: 통합 홈 ===== */
-function vHome(){
+function vHomeLegacy(){
   var wk = mondayOf();
   var alerts = [];
   var due = state.routines.filter(function(x){ return routineDue(x); });
@@ -309,6 +340,32 @@ function vHome(){
     '</div></div>'+
     '<h2>사업별 현황</h2><div class="grid2">'+cards+'</div>';
 }
+function appCards(limit){
+  return APPS.slice(0,limit||APPS.length).map(function(a){return '<article class="app-card"><div class="app-top"><div><h3>'+esc(a.name)+'</h3><div class="hint">'+esc(a.user)+'</div></div><span class="live-dot">운영 중</span></div><p>'+esc(a.role)+'</p><div class="app-meta">데이터: '+esc(a.data)+'</div><div class="app-actions"><a class="btn sm" href="'+a.url+'" target="_blank" rel="noopener" style="text-decoration:none">앱 열기</a>'+(a.repo?'<a class="btn sm ghost" href="'+a.repo+'" target="_blank" rel="noopener" style="text-decoration:none">GitHub</a>':'')+'</div></article>';}).join('');
+}
+function vHome(){
+  var wk=mondayOf(),tot={inq:0,con:0,pay:0,rev:0};
+  BIZ.forEach(function(b){var m=getMetric(wk,b.id);tot.inq+=+m.inq||0;tot.con+=+m.con||0;tot.pay+=+m.pay||0;tot.rev+=+m.rev||0;});
+  var follow=state.pipeline.filter(function(p){return p.stage==='문의'||p.stage==='상담예정';});
+  var due=state.routines.filter(routineDue),late=state.contents.filter(function(c){return c.status!=='발행완료'&&c.date&&c.date<todayStr();});
+  var priorities=[];BIZ.forEach(function(b){var d=state.biz[b.id],x=d.tasks.find(function(t){return !t.done;});if(x&&priorities.length<3)priorities.push({biz:b.short,text:x.text});});
+  var health=BIZ.map(function(b){var d=state.biz[b.id],m=getMetric(wk,b.id),open=d.tasks.filter(function(x){return !x.done;}).length;return '<article class="health-card" style="--hc:'+b.color+'" onclick="App.go(\'biz:'+b.id+'\')"><div class="health-status">'+esc(open?'진행 중':'안정')+'</div><h3>'+esc(b.short)+'</h3><div class="health-num">문의 '+fmt(m.inq)+' · 상담 '+fmt(m.con)+' · 결제 '+fmt(m.pay)+'<br>열린 과제 '+open+'개</div></article>';}).join('');
+  var alerts=[];if(follow.length)alerts.push('상담 후속 '+follow.length+'명');if(due.length)alerts.push('운영 루틴 '+due.length+'건');if(late.length)alerts.push('기한 지난 콘텐츠 '+late.length+'건');if(daysSince(state.lastExport)>7)alerts.push('정기 백업 필요');if(!alerts.length)alerts.push('긴급 운영 경보 없음');
+  var consultRate=tot.inq?Math.round(tot.con/tot.inq*100):0,payRate=tot.con?Math.round(tot.pay/tot.con*100):0;
+  return '<section class="master-hero"><div class="eyebrow">EDUCERE BUSINESS MASTER MAP</div><h1>에듀케레 사업화 마스터맵</h1><p>'+todayStr()+' · 이번 주 '+weekLabel(wk)+'<br><b>이번 주 핵심:</b> '+esc(state.mastermap.focus)+'</p><div class="master-actions"><button class="btn primary" onclick="App.go(\'roadmap\')">개발 로드맵</button><button class="btn" onclick="App.go(\'apps\')">운영 앱 모두 보기</button><button class="btn" onclick="App.go(\'metrics\')">이번 주 실적 입력</button></div></section>'+
+  '<div class="grid2"><div class="card"><h2 style="margin-top:0">오늘 먼저 할 일</h2>'+(priorities.length?priorities.map(function(x,i){return '<div class="task"><span class="badge">'+(i+1)+'</span><label><b>'+esc(x.biz)+'</b> · '+esc(x.text)+'</label></div>';}).join(''):'<div class="hint">각 사업 화면에서 우선 과제를 등록해 주세요.</div>')+'</div><div class="card"><h2 style="margin-top:0">운영 경보</h2>'+alerts.map(function(x,i){return '<div class="alert '+(i===0&&x.indexOf('없음')<0?'red':'')+'">'+esc(x)+'</div>';}).join('')+'</div></div>'+
+  '<h2>사업 건강도</h2><div class="health-grid">'+health+'</div>'+
+  '<div class="card" style="margin-top:18px"><div class="row" style="justify-content:space-between"><h2 style="margin:0">이번 주 고객·매출 흐름</h2><button class="btn sm ghost" onclick="App.go(\'pipe\')">고객 파이프라인</button></div><div class="funnel-master" style="margin-top:14px"><div class="funnel-box"><b>'+fmt(tot.inq)+'</b><span>문의·유입</span></div><div class="funnel-box"><b>'+fmt(tot.con)+'</b><span>상담 '+consultRate+'%</span></div><div class="funnel-box"><b>'+fmt(tot.pay)+'</b><span>등록·결제 '+payRate+'%</span></div><div class="funnel-box"><b>'+fmt(follow.length)+'</b><span>후속 연락</span></div><div class="funnel-box"><b>'+fmt(state.contents.filter(function(c){return c.status==='발행완료';}).length)+'</b><span>발행 콘텐츠</span></div><div class="funnel-box"><b>'+fmt(tot.rev)+'</b><span>주간 매출(원)</span></div></div></div>'+
+  '<div class="row" style="justify-content:space-between;margin-top:22px"><h2 style="margin:0">지금 사용 중인 앱</h2><button class="btn sm ghost" onclick="App.go(\'apps\')">전체 앱·연결 보기</button></div><div class="app-grid" style="margin-top:12px">'+appCards(6)+'</div>'+
+  '<div class="row" style="justify-content:space-between;margin-top:22px"><h2 style="margin:0">개발 로드맵</h2><button class="btn sm ghost" onclick="App.go(\'roadmap\')">로드맵 관리</button></div>'+roadmapHTML();
+}
+function roadmapHTML(){
+  var defs=[['now','지금 하는 일'],['next','다음 순서'],['later','연결·고도화'],['done','완료']];
+  return '<div class="roadmap-board" style="margin-top:12px">'+defs.map(function(d){var rows=state.mastermap.roadmap.filter(function(x){return x.stage===d[0];});return '<div class="roadmap-col"><h3>'+d[1]+' · '+rows.length+'</h3>'+rows.map(function(x){return '<div class="road-item"><b>'+esc(x.title)+'</b><small>'+esc(x.owner||'')+'</small></div>';}).join('')+'<button class="btn sm ghost" onclick="App.addRoad(\''+d[0]+'\')">+ 추가</button></div>';}).join('')+'</div>';
+}
+function vApps(){return '<h1>앱·서비스 지도</h1><div class="sub">현재 실제로 운영하거나 배포 중인 앱을 한곳에서 엽니다.</div><div class="alert">앱의 업무 데이터는 아직 모두 자동 통합되지 않습니다. EBER와 에바연은 각각 Supabase를 사용하고, 입시상담앱과 이 대시보드는 브라우저 저장을 중심으로 작동합니다.</div><div class="app-grid">'+appCards()+'</div>';}
+function vRoadmap(){return '<h1>개발 로드맵</h1><div class="sub">해야 할 일의 순서가 사업 방향과 연결되도록 관리합니다.</div><div class="card"><div class="kv"><b>이번 주 핵심</b><input value="'+esc(state.mastermap.focus)+'" onchange="App.setMasterFocus(this.value)"></div></div>'+roadmapHTML();}
+function vData(){var rows=[['비즈니스 대시보드','브라우저 localStorage','JSON·CSV 백업','수동 통합'],['바른학습관','Supabase + localStorage','조직별 클라우드 저장','운영 데이터 원천'],['입시상담앱','브라우저 localStorage','인쇄·PDF','EBER 연동 예정'],['에바연','별도 Supabase + localStorage','계정·프로필 동기화','회원·구독 지표 연동 예정'],['ORDA 랜딩','상담 API','상담 신청','접수 API 실제 점검 필요'],['ORDA 학습앱','별도 운영 데이터','원장 화면','EBER 성과 연동 예정']];return '<h1>데이터·자동화</h1><div class="sub">어디에 어떤 데이터가 저장되고, 무엇을 다음에 연결할지 보여줍니다.</div><div class="data-flow">'+rows.map(function(r){return '<article class="data-card"><h3>'+r[0]+'</h3><p><b>저장:</b> '+r[1]+'<br><b>출력:</b> '+r[2]+'<br><b>연결:</b> '+r[3]+'</p><span class="badge">'+(r[3].indexOf('예정')>=0||r[3].indexOf('점검')>=0?'연결 과제':'운영 중')+'</span></article>';}).join('')+'</div><div class="card" style="margin-top:16px"><h2 style="margin-top:0">권장 연결 순서</h2><div class="task"><span>1</span><label>상담 신청을 통합 고객 파이프라인으로 연결</label></div><div class="task"><span>2</span><label>EBER 핵심 수치를 마스터맵에서 읽기</label></div><div class="task"><span>3</span><label>에바연 무료진단·구독 전환 수치 연결</label></div><div class="task"><span>4</span><label>ORDA 성과와 EBER 학생 기록 연결</label></div></div>';}
 function kpi(label,val){ return '<div><b style="font-size:12px;color:var(--sub)">'+label+'</b><div class="big">'+val+'</div></div>'; }
 function kpiHome(label,val,note,cls){ return '<div class="kpi-card '+(cls||"")+'"><div class="kpi-label"><span>'+label+'</span></div><div class="big">'+val+'</div><div class="kpi-note">'+note+'</div></div>'; }
 /* ===== 화면: 사업별 ===== */
@@ -865,6 +922,8 @@ function vGrid(){
 /* ===== 액션 ===== */
 var App = {
   go: go,
+  setMasterFocus: function(v){ state.mastermap.focus=v.trim(); save(); },
+  addRoad: function(stage){ var title=prompt("로드맵에 추가할 일을 입력하세요."); if(!title)return; var owner=prompt("담당 영역을 입력하세요. 예: 운영, 개발, 콘텐츠","")||""; state.mastermap.roadmap.push({stage:stage,title:title.trim(),owner:owner.trim()}); save(); render(); },
   toggleNav: function(force){
     var open = typeof force==="boolean" ? force : !document.body.classList.contains("nav-open");
     document.body.classList.toggle("nav-open",open);
@@ -1047,6 +1106,9 @@ function render(){
   renderNav();
   var v = document.getElementById("view");
   if(route==="home") v.innerHTML = vHome();
+  else if(route==="apps") v.innerHTML = vApps();
+  else if(route==="roadmap") v.innerHTML = vRoadmap();
+  else if(route==="data") v.innerHTML = vData();
   else if(route.indexOf("biz:")===0) v.innerHTML = vBiz(route.slice(4));
   else if(route==="metrics") v.innerHTML = vMetrics();
   else if(route==="analytics") v.innerHTML = vAnalytics();
@@ -1070,4 +1132,3 @@ render();
 </script>
 </body>
 </html>
-

@@ -275,6 +275,7 @@ function bizName(id){ var b=BIZ.find(function(x){return x.id===id;}); return b? 
 function getMetric(wk,bid){ if(!state.metrics[wk]) state.metrics[wk]={}; if(!state.metrics[wk][bid]) state.metrics[wk][bid]={inq:0,con:0,pay:0,rev:0,note:""}; return state.metrics[wk][bid]; }
 /* ===== 라우팅 ===== */
 var route = "home";
+var studioPrefill = null;   /* 6×5 기획 → 콘텐츠 제작실로 넘길 때 한 번만 쓰이는 임시 값 */
 var curWeek = mondayOf();
 var curMonth = monthStr();
 function go(rt){ route = rt; document.body.classList.remove("nav-open"); render(); }
@@ -929,7 +930,10 @@ function vGrid(){
   var body = g.formats.map(function(fm,r){
     var tds = g.topics.map(function(tp,c){
       var cc = gridCell(r,c);
-      var extra = cc.text ? (cc.sent ? '<span class="sent">✓ 캘린더에 담김</span>' : '<button class="mini" onclick="App.sendGridCell('+r+','+c+')">📅 캘린더로 보내기</button>') : "";
+      var extra = cc.text ? ('<span style="display:flex;gap:9px;flex-wrap:wrap">'+
+        (cc.sent ? '<span class="sent">✓ 캘린더</span>' : '<button class="mini" onclick="App.sendGridCell('+r+','+c+')">📅 캘린더</button>')+
+        (cc.sentStudio ? '<span class="sent">✓ 제작실</span>' : '<button class="mini" onclick="App.sendGridToStudio('+r+','+c+')">✦ 제작실로</button>')+
+      '</span>') : "";
       return '<td><div class="cellwrap"><input value="'+esc(cc.text)+'" placeholder="'+((r*6+c)+1)+'" onchange="App.setGridCell('+r+','+c+',this.value)">'+extra+'</div></td>';
     }).join("");
     return '<tr><td class="fmt"><input list="fmtlist" value="'+esc(fm)+'" placeholder="포맷 '+(r+1)+'" onchange="App.setGridFormat('+r+',this.value)"></td>'+tds+'</tr>';
@@ -942,7 +946,7 @@ function vGrid(){
   '<div class="hint" style="margin-top:10px">'+
   '· <b>1단계</b> 내가 잘 아는 분야에서 세부 주제 6개를 위쪽 칸에 적으세요.<br>'+
   '· <b>2단계</b> 왼쪽 포맷 5개는 기본값(핵심형·비교형·토크형·설명형·리스트형)을 그대로 쓰거나, 칸을 클릭하면 나오는 목록(짧은 영상 포맷 20종 포함)에서 골라도 됩니다.<br>'+
-  '· <b>3단계</b> 칸을 채운 뒤 "캘린더로 보내기"를 누르면 콘텐츠 캘린더에 등록됩니다. 캘린더에서 날짜·사업·채널을 정하세요.</div></div>';
+  '· <b>3단계</b> 칸을 채운 뒤 <b>📅 캘린더</b>를 누르면 발행 일정으로, <b>✦ 제작실로</b>를 누르면 콘텐츠 제작실로 주제가 넘어갑니다. 제작실에서 AI 초안 생성 → 법규 검수 → 승인까지 이어집니다.</div></div>';
 }
 /* ===== 액션 ===== */
 /* ===== 영업·마케팅 자동화 V1 ===== */
@@ -977,16 +981,64 @@ function contentRows(list,mode){
 }
 function vMktHome(){var s=mktStats(),up=mktItems().filter(function(x){return x.status==='scheduled'||x.status==='approved'||x.status==='review';}).sort(function(a,b){return (a.publishDate||'9999').localeCompare(b.publishDate||'9999');}).slice(0,6);var eva=mktItems().filter(function(x){return x.brand==='eva';}).length,aca=mktItems().filter(function(x){return x.brand==='academy';}).length;return '<h1>◉ 마케팅 통합 홈</h1><div class="sub">브랜드별 기획부터 검수·승인·발행·상담 전환까지 한 흐름으로 관리합니다.</div><div class="mkt-kpis"><div class="mkt-kpi"><span>전체 콘텐츠</span><b>'+s.all+'</b></div><div class="mkt-kpi warn"><span>검수·수정 대기</span><b>'+s.review+'</b></div><div class="mkt-kpi"><span>발행 예정</span><b>'+s.scheduled+'</b></div><div class="mkt-kpi good"><span>발행 완료</span><b>'+s.published+'</b></div><div class="mkt-kpi"><span>문의 전환</span><b>'+s.inquiries+'</b></div></div><div class="grid2" style="margin-top:15px"><div class="card"><h2 style="margin-top:0">브랜드 운영 균형</h2><div class="kv"><b>에바연</b><span>'+eva+'건 · 인스타/블로그/유튜브</span></div><div class="kv"><b>영수학원·바른학습관</b><span>'+aca+'건 · 공동 인스타/블로그</span></div><div class="hint" style="margin-top:10px">에바연은 전국 구독 전환, 영수학원·바른학습관은 양산 지역 상담 전환을 기준으로 봅니다.</div></div><div class="card"><h2 style="margin-top:0">빠른 실행</h2><div class="mkt-actions"><button class="btn" onclick="App.go(\'studio\')">새 콘텐츠 만들기</button><button class="btn ghost" onclick="App.go(\'compliance\')">법규 설정·검수</button><button class="btn ghost" onclick="App.go(\'approval\')">승인 대기함</button><button class="btn ghost" onclick="App.go(\'performance\')">성과 입력</button></div></div></div><h2>다가오는 콘텐츠</h2>'+contentRows(up,'home');}
 function studioChannels(brand,selected){var opts=(state.marketing.channels[brand]||[]);return opts.map(function(c){return '<label style="display:inline-flex;align-items:center;gap:5px;margin-right:10px;font-size:12px"><input type="checkbox" name="mktChannel" value="'+esc(c)+'" '+((selected||[]).indexOf(c)>=0?'checked':'')+'> '+esc(c)+'</label>';}).join('');}
-function vStudio(editId){var x=editId&&mktItems().find(function(i){return i.id===editId;});if(!x)x={id:'',brand:state.marketing.studioBrand||'eva',type:'정보형',channels:[],title:'',hook:'',body:'',cta:'',publishDate:'',status:'draft'};state.marketing.studioBrand=x.brand;return '<h1>✦ 콘텐츠 제작실</h1><div class="sub">하나의 핵심 주제를 브랜드와 채널에 맞는 발행 초안으로 정리합니다.</div><div class="brand-switch"><button class="btn ghost '+(x.brand==='eva'?'on':'')+'" onclick="App.switchStudioBrand(\'eva\')">에바연 학생부설계실</button><button class="btn ghost '+(x.brand==='academy'?'on':'')+'" onclick="App.switchStudioBrand(\'academy\')">영수학원·바른학습관</button></div><div class="studio-grid"><div class="card"><input type="hidden" id="mktId" value="'+esc(x.id)+'"><input type="hidden" id="mktBrand" value="'+esc(x.brand)+'"><div class="form-grid"><div class="field"><label>콘텐츠 유형</label><select id="mktType"><option '+(x.type==='정보형'?'selected':'')+'>정보형</option><option '+(x.type==='공감형'?'selected':'')+'>공감형</option><option '+(x.type==='사례형'?'selected':'')+'>사례형</option><option '+(x.type==='모집·광고형'?'selected':'')+'>모집·광고형</option></select></div><div class="field"><label>발행 예정일</label><input type="date" id="mktDate" value="'+esc(x.publishDate)+'"></div><div class="field full"><label>발행 채널</label><div id="mktChannels">'+studioChannels(x.brand,x.channels)+'</div></div><div class="field full"><label>주제·제목</label><input id="mktTitle" value="'+esc(x.title)+'" placeholder="예: 고2 생기부, 활동 수보다 연결성이 중요한 이유"></div><div class="field full"><label>첫 문장·훅</label><textarea id="mktHook" placeholder="독자가 멈춰보게 할 첫 문장">'+esc(x.hook)+'</textarea></div><div class="field full"><label>핵심 내용</label><textarea id="mktBody" style="min-height:150px" placeholder="전달할 핵심 정보, 사례, 근거를 입력하세요.">'+esc(x.body)+'</textarea></div><div class="field full"><label>행동 유도</label><input id="mktCta" value="'+esc(x.cta)+'" placeholder="예: 무료 진단으로 현재 준비도를 확인하세요"></div></div><div class="mkt-actions" style="margin-top:13px"><button class="btn" onclick="App.previewMkt()">채널 초안 미리보기</button><button class="btn primary" onclick="App.saveMkt(\'draft\')">초안 저장</button><button class="btn ghost" onclick="App.saveMkt(\'review\')">검수 요청</button></div></div><div><div class="card"><h2 style="margin-top:0">채널용 초안</h2><div id="studioOutput" class="studio-output">주제와 내용을 입력한 뒤 ‘채널 초안 미리보기’를 누르세요.</div><button class="btn sm ghost" style="margin-top:9px" onclick="App.copyPreview()">미리보기 복사</button></div><div id="studioLegal" class="legal-box warn"><b>검수 전</b><div class="hint">저장하면 브랜드 규칙과 학원법 위험문구를 자동 확인합니다.</div></div></div></div>';}
+function vStudio(editId){var x=editId&&mktItems().find(function(i){return i.id===editId;});if(!x){x={id:'',brand:state.marketing.studioBrand||'eva',type:'정보형',format:'',channels:[],title:'',hook:'',body:'',cta:'',publishDate:'',status:'draft'};if(studioPrefill){x.title=studioPrefill.title||'';x.format=studioPrefill.format||'';studioPrefill=null;}}state.marketing.studioBrand=x.brand;return '<h1>✦ 콘텐츠 제작실</h1><div class="sub">하나의 핵심 주제를 브랜드와 채널에 맞는 발행 초안으로 정리합니다.</div><div class="brand-switch"><button class="btn ghost '+(x.brand==='eva'?'on':'')+'" onclick="App.switchStudioBrand(\'eva\')">에바연 학생부설계실</button><button class="btn ghost '+(x.brand==='academy'?'on':'')+'" onclick="App.switchStudioBrand(\'academy\')">영수학원·바른학습관</button></div><div class="studio-grid"><div class="card"><input type="hidden" id="mktId" value="'+esc(x.id)+'"><input type="hidden" id="mktBrand" value="'+esc(x.brand)+'"><div class="form-grid"><div class="field"><label>콘텐츠 유형</label><select id="mktType"><option '+(x.type==='정보형'?'selected':'')+'>정보형</option><option '+(x.type==='공감형'?'selected':'')+'>공감형</option><option '+(x.type==='사례형'?'selected':'')+'>사례형</option><option '+(x.type==='모집·광고형'?'selected':'')+'>모집·광고형</option></select></div><div class="field"><label>발행 예정일</label><input type="date" id="mktDate" value="'+esc(x.publishDate)+'"></div><div class="field"><label>포맷 (선택)</label><input id="mktFormat" list="fmtlist" value="'+esc(x.format||'')+'" placeholder="예: 비교형 · 6×5 기획과 같은 포맷"></div><datalist id="fmtlist">'+FMT_LIST.map(function(f){return '<option value="'+esc(f)+'">';}).join('')+'</datalist><div class="field full"><label>발행 채널</label><div id="mktChannels">'+studioChannels(x.brand,x.channels)+'</div></div><div class="field full"><label>주제·제목</label><input id="mktTitle" value="'+esc(x.title)+'" placeholder="예: 고2 생기부, 활동 수보다 연결성이 중요한 이유"></div><div class="field full"><label>첫 문장·훅</label><textarea id="mktHook" placeholder="독자가 멈춰보게 할 첫 문장">'+esc(x.hook)+'</textarea></div><div class="field full"><label>핵심 내용</label><textarea id="mktBody" style="min-height:150px" placeholder="전달할 핵심 정보, 사례, 근거를 입력하세요.">'+esc(x.body)+'</textarea></div><div class="field full"><label>행동 유도</label><input id="mktCta" value="'+esc(x.cta)+'" placeholder="예: 무료 진단으로 현재 준비도를 확인하세요"></div></div><div class="mkt-actions" style="margin-top:13px"><button class="btn" onclick="App.aiDraftMkt()"'+(state.settings.apiKey?'':' disabled')+'>✨ AI 초안 생성</button><button class="btn" onclick="App.previewMkt()">채널 초안 미리보기</button><button class="btn primary" onclick="App.saveMkt(\'draft\')">초안 저장</button><button class="btn ghost" onclick="App.saveMkt(\'review\')">검수 요청</button></div><div class="hint" id="studioStatus" style="margin-top:9px">'+(state.settings.apiKey?'주제·제목(과 원하면 포맷)만 적고 ‘AI 초안 생성’을 누르면 훅·본문·CTA를 채워 줍니다. 생성 뒤 법규 검수를 자동으로 한 번 더 돌립니다.':'설정에서 Claude API 키를 입력하면 ‘AI 초안 생성’을 쓸 수 있습니다.')+'</div></div><div><div class="card"><h2 style="margin-top:0">채널용 초안</h2><div id="studioOutput" class="studio-output">주제와 내용을 입력한 뒤 ‘채널 초안 미리보기’를 누르세요.</div><button class="btn sm ghost" style="margin-top:9px" onclick="App.copyPreview()">미리보기 복사</button></div><div id="studioLegal" class="legal-box warn"><b>검수 전</b><div class="hint">저장하면 브랜드 규칙과 학원법 위험문구를 자동 확인합니다.</div></div></div></div>';}
 function vCompliance(){var s=state.marketing.settings,aca=mktItems().filter(function(x){return x.brand==='academy';}),blocked=aca.filter(function(x){return mktCompliance(x).level==='block';}),warn=aca.filter(function(x){return mktCompliance(x).level==='warn';});return '<h1>⚖ 법규 검수</h1><div class="sub">영수학원·바른학습관 공동 채널에 적용할 고정정보와 위험표현을 관리합니다.</div><div class="alert red">이 화면은 게시 전 누락·위험 신호를 줄이는 내부 체크 도구입니다. 최종 게시 전 실제 등록사항과 관할 교육지원청 기준을 직접 확인하세요.</div><div class="card"><h2 style="margin-top:0">학원 광고 고정정보</h2><div class="legal-fixed"><div class="field"><label>학원 등록번호</label><input id="legalReg" value="'+esc(s.academyReg||'')+'" placeholder="실제 등록번호 입력"></div><div class="field"><label>교습과정·교습과목</label><input id="legalCourse" value="'+esc(s.academyCourse||'')+'" placeholder="등록된 명칭 그대로 입력"></div><div class="field full"><label>교습비등 표시정보</label><textarea id="legalFee" placeholder="교육청 등록·게시 내용과 동일하게 입력">'+esc(s.academyFee||'')+'</textarea></div><div class="field"><label>상담 연락처</label><input id="legalContact" value="'+esc(s.academyContact||'')+'"></div><div class="field"><label>지역</label><input id="legalArea" value="'+esc(s.academyArea||'')+'"></div><div class="field full"><label>바른학습관 주의 문구</label><textarea id="legalStudyhall">'+esc(s.studyhallNotice||'')+'</textarea></div></div><button class="btn" style="margin-top:12px" onclick="App.saveLegalSettings()">고정정보 저장</button><div class="studio-output" style="min-height:auto;margin-top:12px"><b>자동 생성 하단문구</b>\n'+esc(legalFooter('academy'))+'</div></div><div class="grid2"><div class="legal-box block"><b>수정 필요 '+blocked.length+'건</b><ul class="legal-list">'+(blocked.length?blocked.map(function(x){return '<li>'+esc(x.title||'제목 없음')+'</li>';}).join(''):'<li>없음</li>')+'</ul></div><div class="legal-box warn"><b>원장 확인 필요 '+warn.length+'건</b><ul class="legal-list">'+(warn.length?warn.map(function(x){return '<li>'+esc(x.title||'제목 없음')+'</li>';}).join(''):'<li>없음</li>')+'</ul></div></div><h2>학원 채널 콘텐츠 전체 검수</h2>'+contentRows(aca,'compliance');}
 function vApproval(){var list=mktItems().filter(function(x){return ['review','blocked','approved','scheduled'].indexOf(x.status)>=0;}).sort(function(a,b){return (a.publishDate||'9999').localeCompare(b.publishDate||'9999');});return '<h1>✓ 승인·발행 대기</h1><div class="sub">법규 검수 결과와 발행일을 확인한 뒤 원장이 최종 승인합니다.</div>'+contentRows(list,'approval');}
 function vPerformance(){var s=mktStats(),pub=mktItems().filter(function(x){return x.status==='published';}),max=Math.max(1,s.views,s.clicks,s.inquiries);return '<h1>↗ 마케팅 성과</h1><div class="sub">발행 콘텐츠의 조회·클릭·문의를 입력해 실제 상담 전환을 확인합니다.</div><div class="perf-grid"><div class="perf-card"><h3>조회</h3><b class="big">'+fmt(s.views)+'</b><div class="perf-bar"><i style="width:'+Math.round(s.views/max*100)+'%"></i></div></div><div class="perf-card"><h3>링크 클릭</h3><b class="big">'+fmt(s.clicks)+'</b><div class="perf-bar"><i style="width:'+Math.round(s.clicks/max*100)+'%"></i></div></div><div class="perf-card"><h3>문의</h3><b class="big">'+fmt(s.inquiries)+'</b><div class="perf-bar"><i style="width:'+Math.round(s.inquiries/max*100)+'%"></i></div></div></div><div class="card" style="margin-top:15px"><h2 style="margin-top:0">발행 콘텐츠별 성과</h2>'+(pub.length?pub.map(function(x){var m=x.metrics||{};return '<div class="content-row"><div><b>'+esc(MKT_BRAND[x.brand])+'</b></div><div><h3>'+esc(x.title)+'</h3><p>'+mktChannelLabel(x)+'</p></div><label class="field"><span>조회</span><input type="number" value="'+(+m.views||0)+'" onchange="App.setMktMetric(\''+x.id+'\',\'views\',this.value)"></label><label class="field"><span>클릭</span><input type="number" value="'+(+m.clicks||0)+'" onchange="App.setMktMetric(\''+x.id+'\',\'clicks\',this.value)"></label><div><label class="field"><span>문의</span><input type="number" value="'+(+m.inquiries||0)+'" onchange="App.setMktMetric(\''+x.id+'\',\'inquiries\',this.value)"></label><button class="btn sm ghost" onclick="App.addLeadFromMkt(\''+x.id+'\')">상담고객 연결</button></div></div>';}).join(''):'<div class="empty-state">발행 완료 콘텐츠가 생기면 성과를 입력할 수 있습니다.</div>')+'</div>';}
+/* ----- 콘텐츠 제작실 AI 초안 ----- */
+function mktDraftPrompt(x,fixes){
+  var brandLine = x.brand==='academy'
+    ? '브랜드: 에듀케레 영수학원·바른학습관(경남 양산). 독자는 지역 학부모다. 학원 광고 규정을 지켜야 한다.'
+    : '브랜드: 에바연 학생부설계실(전국 온라인 학생부 설계 서비스). 독자는 고등학생 본인과 학부모다. 본문의 주인공은 학생이며 "나·내"의 1인칭 시선으로 쓴다.';
+  return '너는 한국 중·고등 교육 브랜드의 콘텐츠 작가다.\n'+brandLine+'\n'+
+    '콘텐츠 유형: '+(x.type||'정보형')+'\n포맷: '+(x.format||'자유')+'\n발행 채널: '+((x.channels||[]).join(', ')||'미정')+'\n주제: '+x.title+'\n\n'+
+    '반드시 지킬 규칙\n'+
+    '1. 합격·성적을 보장하거나 단정하는 표현(100%, 무조건, 반드시 합격, 성적 보장)을 쓰지 마라.\n'+
+    '2. 최고·유일·압도적·1위 같은 최상급 표현을 쓰지 마라.\n'+
+    '3. 확인되지 않은 후기·합격 사례·수치·만족도를 지어내지 마라. 예시는 일반적인 상황으로 쓰고 특정 학생의 실적처럼 보이게 하지 마라.\n'+
+    '4. 과장 없이, 독자가 오늘 바로 해볼 수 있는 구체적인 내용을 담아라.\n\n'+
+    (fixes&&fixes.length ? '이전 초안에서 아래 문제가 지적되었다. 반드시 고쳐서 다시 써라.\n- '+fixes.join('\n- ')+'\n\n' : '')+
+    '출력 형식(다른 설명 금지)\n[훅]\n(멈춰보게 만드는 첫 문장 1~2줄)\n[본문]\n(핵심 정보·근거·예시를 채널 분량에 맞게 5~12줄)\n[CTA]\n(행동 유도 한 줄)';
+}
+function parseMktDraft(t){
+  var g=function(tag,next){ var m=t.match(new RegExp('\\['+tag+'\\]\\s*([\\s\\S]*?)(?=\\['+next+'\\]|$)')); return m?m[1].trim():''; };
+  var d={hook:g('훅','본문'), body:g('본문','CTA'), cta:g('CTA','__끝__')};
+  if(!d.hook&&!d.body) d.body=t.trim();
+  return d;
+}
+function aiDraftMkt(retry){
+  if(!state.settings.apiKey){ alert('설정에서 API 키를 먼저 입력해주세요.'); return; }
+  var x=App.readStudio();
+  if(!x.title){ alert('주제·제목을 먼저 입력하세요.'); return; }
+  var st=document.getElementById('studioStatus');
+  if(st) st.textContent = retry ? '검수에서 걸린 표현을 고쳐 다시 쓰는 중…' : 'AI가 초안을 쓰는 중… 10~20초 정도 걸립니다.';
+  fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{ "content-type":"application/json","x-api-key":state.settings.apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true" },
+    body: JSON.stringify({ model: state.settings.model, max_tokens:1600, messages:[{role:"user", content: mktDraftPrompt(x, retry&&retry.fixes)}] })
+  }).then(function(res){return res.json();}).then(function(data){
+    var el=document.getElementById('studioStatus');
+    if(data && data.content){
+      var txt=data.content.filter(function(c){return c.type==="text";}).map(function(c){return c.text||"";}).join("\n");
+      var d=parseMktDraft(txt);
+      if(!d.hook && !d.body){ if(el) el.textContent="⚠️ 응답을 이해하지 못했습니다. 다시 시도해주세요."; return; }
+      var set=function(id,v){ var n=document.getElementById(id); if(n && v) n.value=v; };
+      set('mktHook',d.hook); set('mktBody',d.body); set('mktCta',d.cta);
+      App.previewMkt();
+      var c=mktCompliance(App.readStudio());
+      var fixable=c.issues.concat(c.warnings).filter(function(v){ return v.indexOf('설정되지')<0 && v.indexOf('채널이 선택')<0 && v.indexOf('제목이 없')<0; });
+      if(!retry && fixable.length){ aiDraftMkt({fixes:fixable}); return; }
+      if(el) el.textContent = c.level==='pass'
+        ? '초안 완성 · 자동 검수 통과. 내용을 직접 확인한 뒤 저장하세요.'
+        : '초안 완성 · 오른쪽 검수 상자의 확인 항목을 보고 손질하세요.';
+    } else if(data && data.error){ if(el) el.textContent="⚠️ "+(data.error.message||"오류"); }
+  }).catch(function(e){ var el2=document.getElementById('studioStatus'); if(el2) el2.textContent="⚠️ 연결 실패: "+e.message; });
+}
 var App = {
   go: go,
+  aiDraftMkt: aiDraftMkt,
   setMasterFocus: function(v){ state.mastermap.focus=v.trim(); save(); },
   addRoad: function(stage){ var title=prompt("로드맵에 추가할 일을 입력하세요."); if(!title)return; var owner=prompt("담당 영역을 입력하세요. 예: 운영, 개발, 콘텐츠","")||""; state.mastermap.roadmap.push({stage:stage,title:title.trim(),owner:owner.trim()}); save(); render(); },
   switchStudioBrand: function(brand){state.marketing.studioBrand=brand;save();document.getElementById('view').innerHTML=vStudio();},
-  readStudio: function(){var channels=Array.from(document.querySelectorAll('input[name="mktChannel"]:checked')).map(function(x){return x.value;});return {id:(document.getElementById('mktId')||{}).value||uid(),brand:(document.getElementById('mktBrand')||{}).value||'eva',type:(document.getElementById('mktType')||{}).value||'정보형',channels:channels,title:(document.getElementById('mktTitle')||{}).value.trim(),hook:(document.getElementById('mktHook')||{}).value.trim(),body:(document.getElementById('mktBody')||{}).value.trim(),cta:(document.getElementById('mktCta')||{}).value.trim(),publishDate:(document.getElementById('mktDate')||{}).value||'',metrics:{views:0,clicks:0,inquiries:0}};},
+  readStudio: function(){var channels=Array.from(document.querySelectorAll('input[name="mktChannel"]:checked')).map(function(x){return x.value;});return {id:(document.getElementById('mktId')||{}).value||uid(),brand:(document.getElementById('mktBrand')||{}).value||'eva',type:(document.getElementById('mktType')||{}).value||'정보형',format:(((document.getElementById('mktFormat')||{}).value)||'').trim(),channels:channels,title:(document.getElementById('mktTitle')||{}).value.trim(),hook:(document.getElementById('mktHook')||{}).value.trim(),body:(document.getElementById('mktBody')||{}).value.trim(),cta:(document.getElementById('mktCta')||{}).value.trim(),publishDate:(document.getElementById('mktDate')||{}).value||'',metrics:{views:0,clicks:0,inquiries:0}};},
   previewMkt: function(){var x=App.readStudio(),footer=legalFooter(x.brand),parts=[];(x.channels||[]).forEach(function(c){if(c==='인스타그램')parts.push('[인스타그램]\n'+(x.hook||x.title)+'\n\n'+x.body+'\n\n'+x.cta+'\n\n#에듀케레 #'+(x.brand==='eva'?'학생부설계 #세특 #탐구활동':'자기주도학습 #영어수학 #양산학원')+'\n'+footer);else if(c==='네이버 블로그')parts.push('[네이버 블로그]\n제목: '+x.title+'\n\n'+x.hook+'\n\n'+x.body+'\n\n정리\n'+x.cta+'\n\n'+footer);else if(c==='유튜브')parts.push('[유튜브 영상 구성]\n제목: '+x.title+'\n썸네일: '+(x.hook||x.title)+'\n\n오프닝\n'+x.hook+'\n\n핵심 내용\n'+x.body+'\n\n마무리\n'+x.cta+'\n\n설명란\n'+footer);});var out=document.getElementById('studioOutput');out.textContent=parts.join('\n\n────────────\n\n')||'발행 채널을 하나 이상 선택하세요.';var c=mktCompliance(x),box=document.getElementById('studioLegal');box.className='legal-box '+c.level;box.innerHTML='<b>'+(c.level==='pass'?'자동 검수 통과':c.level==='warn'?'원장 확인 필요':'수정 필요')+'</b><ul class="legal-list">'+c.issues.concat(c.warnings).map(function(v){return '<li>'+esc(v)+'</li>';}).join('')+(c.issues.length+c.warnings.length?'':'<li>현재 입력 기준으로 탐지된 위험 신호가 없습니다.</li>')+'</ul>';},
   saveMkt: function(status){var x=App.readStudio();if(!x.title){alert('주제·제목을 입력하세요.');return;}if(!x.channels.length){alert('발행 채널을 선택하세요.');return;}var old=mktItems().find(function(i){return i.id===x.id;}),c=mktCompliance(x);x.status=status==='review'&&c.level==='block'?'blocked':status;x.createdAt=old&&old.createdAt||new Date().toISOString();x.updatedAt=new Date().toISOString();x.metrics=old&&old.metrics||x.metrics;var idx=mktItems().findIndex(function(i){return i.id===x.id;});if(idx>=0)state.marketing.items[idx]=x;else state.marketing.items.push(x);save();alert(x.status==='blocked'?'저장했습니다. 법규 검수에서 수정 필요 항목을 확인하세요.':'저장했습니다.');document.getElementById('view').innerHTML=vStudio(x.id);App.previewMkt();},
   editMkt: function(id){route='studio';renderNav();document.getElementById('view').innerHTML=vStudio(id);document.getElementById('pageLabel').textContent='콘텐츠 제작실';setTimeout(App.previewMkt,0);},
@@ -1048,6 +1100,7 @@ var App = {
   setGridFormat: function(i,v){ state.grid.formats[+i]=v; save(); },
   setGridCell: function(r,c,v){ var cc=gridCell(r,c); cc.text=v; save(); render(); },
   sendGridCell: function(r,c){ var cc=gridCell(r,c); if(!cc.text) return; var tp=state.grid.topics[c]||("주제"+(c+1)); var fm=state.grid.formats[r]||("포맷"+(r+1)); state.contents.push({id:uid(), date:"", biz:"evayon", channel:CH[0], title:"["+tp+"·"+fm+"] "+cc.text, status:"예정"}); cc.sent=true; save(); render(); },
+  sendGridToStudio: function(r,c){ var cc=gridCell(r,c); if(!cc.text) return; studioPrefill={title:cc.text, format:state.grid.formats[r]||""}; cc.sentStudio=true; save(); route="studio"; renderNav(); document.getElementById("view").innerHTML=vStudio(); var lb=document.getElementById("pageLabel"); if(lb) lb.textContent="콘텐츠 제작실"; },
   sugMonth: function(n){ curSugMonth = ((curSugMonth-1+n)%12+12)%12+1; render(); },
   fillTopicChip: function(name){ var i=state.grid.topics.findIndex(function(x){return !x;}); if(i<0){ alert("주제 칸이 모두 찼습니다. 비우고 다시 시도하세요."); return; } state.grid.topics[i]=name; save(); render(); },
   useSeasonIdea: function(i){ var s=SEASON[curSugMonth]; if(!s) return; var it=s.ideas[i]; if(!it) return; var p=firstEmptyCellPos(); if(!p){ alert("빈 칸이 없습니다."); return; } gridCell(p[0],p[1]).text=it[1]; save(); render(); },
@@ -1126,16 +1179,18 @@ var App = {
 };
 /* ===== 렌더 ===== */
 /* ===== 화면: 자동 예약 작업 (Claude) ===== */
+/* linked: 실제로 Claude 예약 작업에 등록을 마친 항목만 true 로 바꾸세요.
+   false 인 항목은 "계획"일 뿐이며 정해진 시각이 되어도 아무것도 실행되지 않습니다. */
 var AUTO_TASKS = [
-  { icon:"📰", name:"입시·교육 뉴스 아침 브리핑", color:"#3b5bdb",
+  { icon:"📰", name:"입시·교육 뉴스 아침 브리핑", color:"#3b5bdb", linked:false,
     when:"평일(월~금) 오전 7시", cad:"weekday", hour:7,
     desc:"그날의 대입 정책·제도, 수능·모의고사, 대학별 모집 요강, 교육 트렌드 뉴스를 조사해 핵심 요약과 출처 링크로 정리합니다.",
     out:"한국어 요약 브리핑(.md)" },
-  { icon:"✍️", name:"입시뉴스 → 블로그·SNS 콘텐츠 초안", color:"#12b886",
+  { icon:"✍️", name:"입시뉴스 → 블로그·SNS 콘텐츠 초안", color:"#12b886", linked:false,
     when:"평일(월~금) 오전 8시", cad:"weekday", hour:8,
     desc:"뉴스 중 관심도 높은 주제 1개를 골라 블로그 글 초안(제목 후보 3개·본문·해시태그)과 SNS 카드뉴스 문구를 자동 작성합니다.",
     out:"블로그+SNS 초안(.md)" },
-  { icon:"🗓", name:"월별 입시 일정 리마인더", color:"#f76707",
+  { icon:"🗓", name:"월별 입시 일정 리마인더", color:"#f76707", linked:false,
     when:"매월 1일 오전 9시", cad:"monthly", day:1, hour:9,
     desc:"그달의 수시·정시 원서접수, 수능·모의고사, 대학별고사, 합격자 발표 등 주요 입시 일정을 날짜순으로 정리합니다.",
     out:"이번 달 일정 목록(.md)" }
@@ -1162,20 +1217,34 @@ function autoNextRun(a){
   return a.when;
 }
 function vAuto(){
+  var on = AUTO_TASKS.filter(function(a){ return a.linked; }).length;
   var cards = AUTO_TASKS.map(function(a){
-    return '<div class="card bizcard" style="--bc:'+a.color+'">'+
+    return '<div class="card bizcard" style="--bc:'+(a.linked?a.color:"#adb5bd")+'">'+
       '<h3>'+a.icon+' '+esc(a.name)+'</h3>'+
       '<div class="row" style="margin:4px 0 10px">'+
-        '<span class="badge">⏰ '+esc(a.when)+'</span>'+
-        '<span class="badge ok">다음 실행 '+esc(autoNextRun(a))+'</span></div>'+
+        '<span class="badge">⏰ 희망 시간 '+esc(a.when)+'</span>'+
+        (a.linked
+          ? '<span class="badge ok">다음 실행 '+esc(autoNextRun(a))+'</span>'
+          : '<span class="badge bad">미연결 · 실행되지 않음</span>')+'</div>'+
       '<div style="font-size:13.5px;line-height:1.6">'+esc(a.desc)+'</div>'+
-      '<div class="kv" style="margin-top:10px"><b>결과물</b>'+esc(a.out)+' · 완료되면 휴대폰 알림</div>'+
+      '<div class="kv" style="margin-top:10px"><b>결과물</b>'+esc(a.out)+(a.linked?' · 완료되면 알림':' · 연결하면 받게 될 형식')+'</div>'+
     '</div>';
   }).join("");
   return '<h1>🔁 자동 예약 작업 (Claude)</h1>'+
-    '<div class="sub">Claude가 정해진 시간에 스스로 실행해 결과물을 보내주는 작업입니다. 이 화면은 현황을 보여주는 용도예요.</div>'+
-    '<div class="alert">이 작업들은 Claude 클라우드에서 자동 실행됩니다. 시간·내용을 바꾸거나 멈추려면 Claude에게 말씀해 주세요. (예: "블로그 초안 작업을 오전 9시로 바꿔줘")</div>'+
-    '<div class="grid2">'+cards+'</div>';
+    '<div class="sub">정해진 시간에 Claude가 스스로 실행해 결과물을 보내주는 작업입니다. 실행은 이 대시보드가 아니라 Claude 쪽에 등록되며, 이 화면은 그 현황판입니다.</div>'+
+    '<div class="alert'+(on?'':' red')+'"><b>연결 '+on+' / '+AUTO_TASKS.length+'건</b><br>'+
+      (on===AUTO_TASKS.length
+        ? '모든 작업이 연결되어 있습니다. 시간·내용을 바꾸거나 멈추려면 Claude에게 말씀해 주세요. (예: "블로그 초안 작업을 오전 9시로 바꿔줘")'
+        : (on
+          ? '연결된 작업만 실제로 실행됩니다. 미연결 작업은 아직 계획 단계입니다.'
+          : '아래 작업들은 아직 <b>계획만 적혀 있고 실제로 예약되어 있지 않습니다.</b> 지금은 시간이 되어도 실행되지 않고 결과물도 오지 않습니다.'))+
+    '</div>'+
+    '<div class="grid2">'+cards+'</div>'+
+    '<div class="card" style="margin-top:16px"><h2 style="margin-top:0">실제로 연결하려면</h2>'+
+    '<div class="task"><span>1</span><label>Claude에게 예약을 요청합니다. 예: "입시뉴스 아침 브리핑을 평일 오전 7시에 예약해줘"</label></div>'+
+    '<div class="task"><span>2</span><label>결과물을 어디로 받을지 정합니다. 카카오톡 나에게 보내기 · 옵시디언 볼트 폴더 등.</label></div>'+
+    '<div class="task"><span>3</span><label>등록이 끝나면 이 화면을 <b>연결됨</b>으로 바꿔 달라고 요청하세요. (index.html의 AUTO_TASKS에서 해당 항목 linked 값을 true로 변경)</label></div>'+
+    '<div class="hint" style="margin-top:10px">이 대시보드는 브라우저가 열려 있을 때만 동작합니다. 브라우저가 닫혀 있어도 도는 작업은 이 파일이 아니라 Claude 쪽에 등록되어야 합니다.</div></div>';
 }
 function render(){
   renderNav();
